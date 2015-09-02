@@ -16,8 +16,8 @@ window.PaintMasterPlugin.PaintMaster = PaintMaster = (function() {
     this.drawToolbox();
     this.setToolboxEventListeners();
     this.setDrawListeners();
-    this.fCanvas.setWidth(500);
-    this.fCanvas.setHeight(500);
+    this.fCanvas.setWidth(this.opts.width);
+    this.fCanvas.setHeight(this.opts.height);
   }
 
   PaintMaster.prototype.drawToolbox = function() {

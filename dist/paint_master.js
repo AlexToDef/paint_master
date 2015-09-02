@@ -394,8 +394,6 @@ window.PaintMasterPlugin.tools.Crop = Crop = (function(superClass) {
       top: 50,
       width: 100,
       height: 100,
-      borderColor: 'orange',
-      stroke: 'orange',
       fill: ''
     });
     this.canvas.add(this.trueSight);

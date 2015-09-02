@@ -59,8 +59,6 @@ window.PaintMasterPlugin.tools.Crop = class Crop extends window.PaintMasterPlugi
       top: 50
       width: 100
       height: 100
-      borderColor: 'orange'
-      stroke: 'orange'
       fill: ''
     )
     @canvas.add(@trueSight)

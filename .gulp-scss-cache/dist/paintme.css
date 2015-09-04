@@ -1,0 +1,119 @@
+.at-effects {
+  color: #005C75;
+  background: #ffffff;
+  /* Old browsers */
+  background: -moz-linear-gradient(top, #00b7ea 0%, #009ec3 100%);
+  /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #00b7ea), color-stop(100%, #009ec3));
+  /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top, #00b7ea 0%, #009ec3 100%);
+  /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top, #00b7ea 0%, #009ec3 100%);
+  /* Opera 11.10+ */
+  background: -ms-linear-gradient(top, #00b7ea 0%, #009ec3 100%);
+  /* IE10+ */
+  background: linear-gradient(to bottom, #00b7ea 0%, #009ec3 100%);
+  /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#e5e5e5',GradientType=0 );
+  /* IE6-9 */
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  width: 20vw;
+  padding: 10px;
+  border: 1px solid #009ec3;
+  box-shadow: 0px 0px 15px black; }
+  .at-effects .item {
+    cursor: pointer;
+    border: 1px solid #00b7ea;
+    padding: 5px 10px;
+    font-size: 1.3em; }
+
+.at-palette {
+  background: #ffffff;
+  /* Old browsers */
+  background: -moz-linear-gradient(top, #00b7ea 0%, #009ec3 100%);
+  /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #00b7ea), color-stop(100%, #009ec3));
+  /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top, #00b7ea 0%, #009ec3 100%);
+  /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top, #00b7ea 0%, #009ec3 100%);
+  /* Opera 11.10+ */
+  background: -ms-linear-gradient(top, #00b7ea 0%, #009ec3 100%);
+  /* IE10+ */
+  background: linear-gradient(to bottom, #00b7ea 0%, #009ec3 100%);
+  /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#e5e5e5',GradientType=0 );
+  /* IE6-9 */
+  display: flex;
+  flex-wrap: wrap;
+  width: 20vw;
+  padding: 10px;
+  border: 1px solid #009ec3;
+  box-shadow: 0px 0px 15px black; }
+  .at-palette .item {
+    width: 2vw;
+    height: 2vw;
+    cursor: pointer; }
+
+.at-toolbar {
+  background-color: #009ec3;
+  display: inline-block; }
+
+.at-toolbar div div {
+  display: inline-block;
+  cursor: pointer;
+  background: #00b7ea;
+  /* Old browsers */
+  width: 50px;
+  height: 50px;
+  text-align: center;
+  background-size: 100%;
+  border: 2px solid #008EB0; }
+  .at-toolbar div div.active {
+    background: #00b7ea;
+    /* Old browsers */
+    background: -moz-linear-gradient(top, #005C75 0%, #009ec3 100%);
+    /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #00b7ea), color-stop(100%, #009ec3));
+    /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, #005C75 0%, #009ec3 100%);
+    /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, #005C75 0%, #009ec3 100%);
+    /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, #005C75 0%, #009ec3 100%);
+    /* IE10+ */
+    background: linear-gradient(to bottom, #005C75 0%, #009ec3 100%);
+    /* W3C */ }
+    .at-toolbar div div.active svg {
+      fill: #00b7ea; }
+  .at-toolbar div div:active {
+    background: #00b7ea;
+    /* Old browsers */
+    background: -moz-linear-gradient(top, #005C75 0%, #009ec3 100%);
+    /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #00b7ea), color-stop(100%, #009ec3));
+    /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, #005C75 0%, #009ec3 100%);
+    /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, #005C75 0%, #009ec3 100%);
+    /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, #005C75 0%, #009ec3 100%);
+    /* IE10+ */
+    background: linear-gradient(to bottom, #005C75 0%, #009ec3 100%);
+    /* W3C */ }
+    .at-toolbar div div:active svg {
+      fill: #00b7ea; }
+  .at-toolbar div div:hover svg {
+    fill: white; }
+
+.at-toolbar div svg {
+  width: 60%;
+  height: 60%;
+  fill: #005C75; }
+
+body {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="64" height="64"><circle cx="32" cy="32" r="32" style="fill: red;"/></svg>'); }
+
+/*# sourceMappingURL=paintme.css.map */

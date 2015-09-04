@@ -2,7 +2,10 @@ $(document).ready ->
   window.painter = new window.PaintMaster
     applyOnImage: true,
     backgroundUrl: $('img').attr('src'),
-    id: 'testme'
+    id: 'testme',
+    width: 100,
+    height: 100,
+    position: 'top'
 
   painter.addToolboxItem PaintMasterPlugin.tools.ClipboardImagePaste
   painter.addToolboxItem PaintMasterPlugin.tools.DrawingModeSwitch

@@ -7,11 +7,13 @@
   display: flex
   flex-direction: row
   justify-content: flex-start
-  background-color: rgba(64,64,64,0.75)
+  background-color: rgba(150,150,180,0.75)
   border: 1px solid rgba(100,100,100,0.85)
 
   &.pm-toolbox-bottom
-    bottom: -2em
+    bottom: -3em
+  &.pm-toolbox-top
+    top: -3em
 
   .pm-tool
     height: auto
@@ -23,3 +25,41 @@
     text-align: center
     font-size: 1.5em
     opacity: 1
+    position: relative
+    color: rgba(10,10,100,0.75)
+    &.active
+      text-shadow: 1px 1px 10px rgba(10,10,180,1)
+      .pm-tooltip
+        text-shadow: none
+    &:hover
+      color: rgba(10,10,150,1)
+
+  .pm-tooltip
+    position: absolute
+    top: 140%
+    height: auto
+    background: rgba(16,16,16,0.75)
+    color: #EEE
+    padding: 0.3em 0.5em
+    border-radius: 5px
+    font-size: 0.7em
+    left: 20%
+    min-width: 10em
+    width: auto
+
+  .pm-tooltip
+    overflow: visible !important
+    &:after, &:before
+      bottom: 100%
+      left: 10%
+      border: solid transparent
+      content: " "
+      height: 0
+      width: 0
+      position: absolute
+      pointer-events: none
+    &:after
+      border-color: rgba(16,16,16,0)
+      border-bottom-color: rgba(16,16,16,0.75)
+      border-width: 0.5em
+      margin-left: -0.5em

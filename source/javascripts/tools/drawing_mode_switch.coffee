@@ -1,6 +1,6 @@
 window.PaintMasterPlugin.tools.DrawingModeSwitch = class DrawingModeSwitch extends window.PaintMasterPlugin.tools.BaseTool
   constructor: (@paintMaster) ->
-    @name = 'Drawing Mode Switch'
+    @name = 'Карандаш'
     @id = 'dr-mode-switch'
     super(@paintMaster)
 

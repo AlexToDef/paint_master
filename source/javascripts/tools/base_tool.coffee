@@ -12,8 +12,22 @@ window.PaintMasterPlugin.tools.BaseTool = class BaseTool
     return
 
   onRemove: ->
-    console.log 'onRemove'
-    @paintMaster.wrapperEl.find(".pm-tool.#{@id}").remove()
+    @paintMaster.wrapperEl.find("pm-tool.#{@id}").remove()
+
+  onMouseover: (e) ->
+    targetEl = $(e.currentTarget)
+    targetEl.append("<div class='pm-tooltip'>#{@name}</div>") unless targetEl.find('.pm-tooltip').length > 0
+
+  onMouseleave: (e) ->
+    targetEl = $(e.currentTarget)
+    targetEl.find('.pm-tooltip').remove()
+
+  onSubmit: (e) ->
+    return
+
+  onBackspace: (e) ->
+    activeObject = @canvas.getActiveObject()
+    @canvas.remove activeObject
 
   currentColor: =>
     @paintMaster.selectedColor || 'red'

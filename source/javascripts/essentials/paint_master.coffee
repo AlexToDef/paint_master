@@ -14,11 +14,13 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
 
     @fCanvas.setWidth @opts.width
     @fCanvas.setHeight @opts.height
+    @fCanvas.setBackgroundColor 'white'
+    @fCanvas.renderAll()
 
   drawToolbox: ->
     console.log 'drawToolbox'
     console.log @wrapperEl
-    html = "<div class='pm-toolbox pm-toolbox-bottom'></div>"
+    html = "<div class='pm-toolbox pm-toolbox-#{@opts.position}'></div>"
     @toolboxEl = $(html).appendTo @wrapperEl
 
   setToolboxEventListeners: ->
@@ -37,12 +39,29 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
       toolId = $(this).parent().data('pmToolId')
       self.toolbox[toolId].onChange(e)
 
+    $(@wrapperEl).on 'mouseover', '.pm-tool', (e) ->
+      toolId = $(this).data('pmToolId')
+      self.toolbox[toolId].onMouseover(e)
+
+    $(@wrapperEl).on 'mouseleave', '.pm-tool', (e) ->
+      toolId = $(this).data('pmToolId')
+      self.toolbox[toolId].onMouseleave(e)
+
     onKeyDownHandler = (e) ->
       switch e.keyCode
-        when 46
-          e.preventDefault()
-          activeObject = self.fCanvas.getActiveObject()
-          self.fCanvas.remove activeObject
+        when 46, 8
+          if self.fCanvas.getActiveObject()
+            e.preventDefault()
+            if self.activeTool
+              self.activeTool.onBackspace(e)
+            else
+              activeObject = self.fCanvas.getActiveObject()
+              self.fCanvas.remove activeObject
+        when 13
+          if self.fCanvas.getActiveObject() and self.activeTool
+            e.preventDefault()
+            self.activeTool.onSubmit(e)
+              
     window.onkeydown = onKeyDownHandler
 
   setDrawListeners: ->
@@ -63,4 +82,12 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
     @toolbox[itemId].onRemove()
     delete @toolbox[itemId]
 
-
+  exportImage: (format) ->
+    img = @fCanvas.toDataURL({
+      format: format,
+      left: 0,
+      top: 0,
+      width: @fCanvas.width,
+      height: @fCanvas.height
+    })
+    return img

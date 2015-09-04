@@ -1,6 +1,6 @@
 window.PaintMasterPlugin.tools.OpenSettings = class OpenSettings extends window.PaintMasterPlugin.tools.BaseTool
   constructor: (@paintMaster) ->
-    @name = 'Open Settings'
+    @name = 'Настройки'
     @id = 'open-settings'
     super(@paintMaster)
     @html = "<div class='pm-tool #{@id}' data-pm-tool-id='#{@id}'> </div>"

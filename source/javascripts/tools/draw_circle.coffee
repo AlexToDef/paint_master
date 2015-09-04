@@ -1,6 +1,6 @@
 window.PaintMasterPlugin.tools.DrawCircle = class DrawCircle extends window.PaintMasterPlugin.tools.BaseTool
   constructor: (@paintMaster) ->
-    @name = 'Draw Circle'
+    @name = 'Окружность'
     @id = 'draw-circle'
     super(@paintMaster)
 
@@ -21,6 +21,7 @@ window.PaintMasterPlugin.tools.DrawCircle = class DrawCircle extends window.Pain
     1
 
   mouseup: (e) ->
+    return if @canvas.getActiveObject()
     @canvas = @paintMaster.fCanvas
     mouse = @canvas.getPointer()
 

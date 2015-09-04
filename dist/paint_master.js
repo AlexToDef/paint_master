@@ -18,13 +18,15 @@ window.PaintMasterPlugin.PaintMaster = PaintMaster = (function() {
     this.setDrawListeners();
     this.fCanvas.setWidth(this.opts.width);
     this.fCanvas.setHeight(this.opts.height);
+    this.fCanvas.setBackgroundColor('white');
+    this.fCanvas.renderAll();
   }
 
   PaintMaster.prototype.drawToolbox = function() {
     var html;
     console.log('drawToolbox');
     console.log(this.wrapperEl);
-    html = "<div class='pm-toolbox pm-toolbox-bottom'></div>";
+    html = "<div class='pm-toolbox pm-toolbox-" + this.opts.position + "'></div>";
     return this.toolboxEl = $(html).appendTo(this.wrapperEl);
   };
 
@@ -52,13 +54,36 @@ window.PaintMasterPlugin.PaintMaster = PaintMaster = (function() {
       toolId = $(this).parent().data('pmToolId');
       return self.toolbox[toolId].onChange(e);
     });
+    $(this.wrapperEl).on('mouseover', '.pm-tool', function(e) {
+      var toolId;
+      toolId = $(this).data('pmToolId');
+      return self.toolbox[toolId].onMouseover(e);
+    });
+    $(this.wrapperEl).on('mouseleave', '.pm-tool', function(e) {
+      var toolId;
+      toolId = $(this).data('pmToolId');
+      return self.toolbox[toolId].onMouseleave(e);
+    });
     onKeyDownHandler = function(e) {
       var activeObject;
       switch (e.keyCode) {
         case 46:
-          e.preventDefault();
-          activeObject = self.fCanvas.getActiveObject();
-          return self.fCanvas.remove(activeObject);
+        case 8:
+          if (self.fCanvas.getActiveObject()) {
+            e.preventDefault();
+            if (self.activeTool) {
+              return self.activeTool.onBackspace(e);
+            } else {
+              activeObject = self.fCanvas.getActiveObject();
+              return self.fCanvas.remove(activeObject);
+            }
+          }
+          break;
+        case 13:
+          if (self.fCanvas.getActiveObject() && self.activeTool) {
+            e.preventDefault();
+            return self.activeTool.onSubmit(e);
+          }
       }
     };
     return window.onkeydown = onKeyDownHandler;
@@ -99,6 +124,18 @@ window.PaintMasterPlugin.PaintMaster = PaintMaster = (function() {
     return delete this.toolbox[itemId];
   };
 
+  PaintMaster.prototype.exportImage = function(format) {
+    var img;
+    img = this.fCanvas.toDataURL({
+      format: format,
+      left: 0,
+      top: 0,
+      width: this.fCanvas.width,
+      height: this.fCanvas.height
+    });
+    return img;
+  };
+
   return PaintMaster;
 
 })();
@@ -124,8 +161,29 @@ window.PaintMasterPlugin.tools.BaseTool = BaseTool = (function() {
   BaseTool.prototype.onClick = function(e) {};
 
   BaseTool.prototype.onRemove = function() {
-    console.log('onRemove');
-    return this.paintMaster.wrapperEl.find(".pm-tool." + this.id).remove();
+    return this.paintMaster.wrapperEl.find("pm-tool." + this.id).remove();
+  };
+
+  BaseTool.prototype.onMouseover = function(e) {
+    var targetEl;
+    targetEl = $(e.currentTarget);
+    if (!(targetEl.find('.pm-tooltip').length > 0)) {
+      return targetEl.append("<div class='pm-tooltip'>" + this.name + "</div>");
+    }
+  };
+
+  BaseTool.prototype.onMouseleave = function(e) {
+    var targetEl;
+    targetEl = $(e.currentTarget);
+    return targetEl.find('.pm-tooltip').remove();
+  };
+
+  BaseTool.prototype.onSubmit = function(e) {};
+
+  BaseTool.prototype.onBackspace = function(e) {
+    var activeObject;
+    activeObject = this.canvas.getActiveObject();
+    return this.canvas.remove(activeObject);
   };
 
   BaseTool.prototype.currentColor = function() {
@@ -168,7 +226,7 @@ window.PaintMasterPlugin.tools.AddCircle = AddCircle = (function(superClass) {
   function AddCircle(paintMaster) {
     this.paintMaster = paintMaster;
     this.onClick = bind(this.onClick, this);
-    this.name = 'Add Circle';
+    this.name = 'Круг';
     this.id = 'add-circle';
     AddCircle.__super__.constructor.call(this, this.paintMaster);
   }
@@ -196,7 +254,7 @@ window.PaintMasterPlugin.tools.AddSquare = AddSquare = (function(superClass) {
   function AddSquare(paintMaster) {
     this.paintMaster = paintMaster;
     this.onClick = bind(this.onClick, this);
-    this.name = 'Add Square';
+    this.name = 'Квадрат';
     this.id = 'add-square';
     this.active = false;
     this.canvas = this.paintMaster.fCanvas;
@@ -215,6 +273,9 @@ window.PaintMasterPlugin.tools.AddSquare = AddSquare = (function(superClass) {
 
   AddSquare.prototype.mouseup = function(e) {
     var currentX, currentY, height, mouse, square, width;
+    if (this.canvas.getActiveObject()) {
+      return;
+    }
     mouse = this.canvas.getPointer();
     currentX = mouse.x;
     currentY = mouse.y;
@@ -250,20 +311,26 @@ window.PaintMasterPlugin.tools.AddText = AddText = (function(superClass) {
   function AddText(paintMaster) {
     this.paintMaster = paintMaster;
     this.onClick = bind(this.onClick, this);
-    this.name = 'Add Text';
+    this.name = 'Текст';
     this.id = 'add-text';
     AddText.__super__.constructor.call(this, this.paintMaster);
   }
 
   AddText.prototype.onClick = function() {
-    var rect;
-    rect = new fabric.IText("Tap and type", {
+    this.iText = new fabric.IText("Tap and type", {
       fontFamily: 'arial black',
       left: 100,
       top: 100,
       fill: this.currentColor()
     });
-    return this.paintMaster.fCanvas.add(rect);
+    return this.paintMaster.fCanvas.add(this.iText);
+  };
+
+  AddText.prototype.onBackspace = function(e) {
+    if (this.canvas.getActiveObject() === this.iText) {
+      return;
+    }
+    return AddText.__super__.onBackspace.call(this);
   };
 
   return AddText;
@@ -275,7 +342,7 @@ window.PaintMasterPlugin.tools.ClipboardImagePaste = ClipboardImagePaste = (func
 
   function ClipboardImagePaste(paintMaster) {
     this.paintMaster = paintMaster;
-    this.name = 'ClipboardImagePaste';
+    this.name = 'Вставить картинку из буфера';
     this.id = 'clipboard-image-paste';
     ClipboardImagePaste.__super__.constructor.call(this, this.paintMaster);
   }
@@ -330,7 +397,7 @@ window.PaintMasterPlugin.tools.AcceptCrop = AcceptCrop = (function(superClass) {
 
   function AcceptCrop(paintMaster) {
     this.paintMaster = paintMaster;
-    this.name = 'Accept Crop';
+    this.name = 'Обрезать';
     this.id = 'accept-crop';
     this.canvas = this.paintMaster.fCanvas;
     AcceptCrop.__super__.constructor.call(this, this.paintMaster);
@@ -339,22 +406,35 @@ window.PaintMasterPlugin.tools.AcceptCrop = AcceptCrop = (function(superClass) {
   AcceptCrop.prototype.activate = function() {
     var ctx, height, img, left, scaleX, scaleY, top, width;
     this.trueSight = this.canvas._objects[this.canvas._objects.length - 1];
-    width = this.trueSight.width;
-    height = this.trueSight.height;
+    width = this.trueSight.width * this.trueSight.scaleX;
+    height = this.trueSight.height * this.trueSight.scaleY;
     left = this.trueSight.left;
     top = this.trueSight.top;
     scaleX = this.trueSight.scaleX;
     scaleY = this.trueSight.scaleY;
     ctx = this.canvas.contextTop || this.canvas.contextContainer;
-    console.log(width);
-    console.log(scaleX);
-    console.log(width * scaleX);
+    if (top < 0) {
+      height = height + top;
+      top = 0;
+    }
+    if (left < 0) {
+      width = width + left;
+      left = 0;
+    }
+    if ((top + height) > this.canvas.height) {
+      height = this.canvas.height - top;
+      top = this.canvas.height - height;
+    }
+    if ((left + width) > this.canvas.width) {
+      width = this.canvas.width - left;
+      left = this.canvas.width - width;
+    }
     img = this.canvas.toDataURL({
       format: 'png',
       left: left,
       top: top,
-      width: width * scaleX,
-      height: height * scaleY,
+      width: width,
+      height: height,
       crossOrigin: 'anonymous'
     });
     this.canvas.clear().renderAll();
@@ -376,7 +456,7 @@ window.PaintMasterPlugin.tools.Crop = Crop = (function(superClass) {
 
   function Crop(paintMaster) {
     this.paintMaster = paintMaster;
-    this.name = 'Crop';
+    this.name = 'Обрезать';
     this.id = 'crop';
     this.canvas = this.paintMaster.fCanvas;
     this.shadeFill = '5E5E5E';
@@ -385,8 +465,8 @@ window.PaintMasterPlugin.tools.Crop = Crop = (function(superClass) {
   }
 
   Crop.prototype.activate = function() {
+    var ts;
     Crop.__super__.activate.call(this);
-    this.paintMaster.addToolboxItem(PaintMasterPlugin.tools.AcceptCrop);
     this.trueSight = new fabric.Rect({
       width: this.canvas.width,
       height: this.canvas.height,
@@ -397,13 +477,14 @@ window.PaintMasterPlugin.tools.Crop = Crop = (function(superClass) {
       fill: ''
     });
     this.canvas.add(this.trueSight);
+    ts = this.trueSight;
     this.addBlindZones();
-    return this.canvas.moveTo(this.trueSight, this.canvas._objects.length);
+    this.canvas.moveTo(this.trueSight, this.canvas._objects.length);
+    return this.canvas.setActiveObject(this.trueSight);
   };
 
   Crop.prototype.deactivate = function() {
     Crop.__super__.deactivate.call(this);
-    console.log(this.paintMaster.toolbox['accept-crop']);
     if (this.paintMaster.toolbox['accept-crop']) {
       this.paintMaster.removeToolboxItem('accept-crop');
     }
@@ -452,13 +533,13 @@ window.PaintMasterPlugin.tools.Crop = Crop = (function(superClass) {
       top: 0
     });
     this.rightBlindZone = this.addBlindZone({
-      height: this.canvas.height,
+      height: this.canvas.height * 2,
       width: this.canvas.width - xy,
       left: xy,
       top: yy
     });
     return this.bottomBlindZone = this.addBlindZone({
-      height: this.canvas.height,
+      height: this.canvas.height * 2,
       width: this.trueSight.width * this.trueSight.scaleX,
       left: xx,
       top: xy
@@ -494,6 +575,49 @@ window.PaintMasterPlugin.tools.Crop = Crop = (function(superClass) {
     return this.bottomBlindZone.set('width', this.trueSight.width * this.trueSight.scaleX).set('left', xx).set('top', yx);
   };
 
+  Crop.prototype.onSubmit = function(e) {
+    var ctx, height, img, left, scaleX, scaleY, top, width;
+    width = this.trueSight.width * this.trueSight.scaleX;
+    height = this.trueSight.height * this.trueSight.scaleY;
+    left = this.trueSight.left;
+    top = this.trueSight.top;
+    scaleX = this.trueSight.scaleX;
+    scaleY = this.trueSight.scaleY;
+    ctx = this.canvas.contextTop || this.canvas.contextContainer;
+    if (top < 0) {
+      height = height + top;
+      top = 0;
+    }
+    if (left < 0) {
+      width = width + left;
+      left = 0;
+    }
+    if ((top + height) > this.canvas.height) {
+      height = this.canvas.height - top;
+      top = this.canvas.height - height;
+    }
+    if ((left + width) > this.canvas.width) {
+      width = this.canvas.width - left;
+      left = this.canvas.width - width;
+    }
+    img = this.canvas.toDataURL({
+      format: 'png',
+      left: left,
+      top: top,
+      width: width,
+      height: height,
+      crossOrigin: 'anonymous'
+    });
+    this.canvas.clear().renderAll();
+    this.canvas.setWidth(width * scaleX);
+    this.canvas.setHeight(height * scaleY);
+    this.canvas.setBackgroundImage(img, (function() {
+      return this.renderAll();
+    }).bind(this.canvas));
+    Crop.__super__.onSubmit.call(this);
+    return this.deactivate();
+  };
+
   return Crop;
 
 })(window.PaintMasterPlugin.tools.BaseTool);
@@ -504,7 +628,7 @@ window.PaintMasterPlugin.tools.DrawCircle = DrawCircle = (function(superClass) {
   function DrawCircle(paintMaster) {
     this.paintMaster = paintMaster;
     this.onClick = bind(this.onClick, this);
-    this.name = 'Draw Circle';
+    this.name = 'Окружность';
     this.id = 'draw-circle';
     DrawCircle.__super__.constructor.call(this, this.paintMaster);
   }
@@ -532,6 +656,9 @@ window.PaintMasterPlugin.tools.DrawCircle = DrawCircle = (function(superClass) {
 
   DrawCircle.prototype.mouseup = function(e) {
     var mouse;
+    if (this.canvas.getActiveObject()) {
+      return;
+    }
     this.canvas = this.paintMaster.fCanvas;
     mouse = this.canvas.getPointer();
     return this.addCircleToCanvas(this.x, this.y, mouse.x, mouse.y);
@@ -569,7 +696,7 @@ window.PaintMasterPlugin.tools.DrawingModeSwitch = DrawingModeSwitch = (function
   function DrawingModeSwitch(paintMaster) {
     this.paintMaster = paintMaster;
     this.onClick = bind(this.onClick, this);
-    this.name = 'Drawing Mode Switch';
+    this.name = 'Карандаш';
     this.id = 'dr-mode-switch';
     DrawingModeSwitch.__super__.constructor.call(this, this.paintMaster);
   }
@@ -599,7 +726,7 @@ window.PaintMasterPlugin.tools.OpenSettings = OpenSettings = (function(superClas
     this.paintMaster = paintMaster;
     this.onChange = bind(this.onChange, this);
     this.onClick = bind(this.onClick, this);
-    this.name = 'Open Settings';
+    this.name = 'Настройки';
     this.id = 'open-settings';
     OpenSettings.__super__.constructor.call(this, this.paintMaster);
     this.html = "<div class='pm-tool " + this.id + "' data-pm-tool-id='" + this.id + "'> </div>";
@@ -625,15 +752,21 @@ window.PaintMasterPlugin.tools.SelectColor = SelectColor = (function(superClass)
   function SelectColor(paintMaster) {
     this.paintMaster = paintMaster;
     this.onChange = bind(this.onChange, this);
-    this.onClick = bind(this.onClick, this);
-    this.name = 'SelectColor';
+    this.name = 'Выбор цвета';
     this.id = 'select-color';
     SelectColor.__super__.constructor.call(this, this.paintMaster);
     this.html = "<div class='pm-tool " + this.id + "' data-pm-tool-id='" + this.id + "'> <input type='color' class='pm-colorpicker' /> </div>";
   }
 
-  SelectColor.prototype.onClick = function(e) {
-    return 1;
+  SelectColor.prototype.activate = function() {
+    var key, ref, results, tool;
+    ref = this.paintMaster.toolbox;
+    results = [];
+    for (key in ref) {
+      tool = ref[key];
+      results.push(tool.deactivate());
+    }
+    return results;
   };
 
   SelectColor.prototype.onChange = function(e) {
@@ -650,7 +783,10 @@ $(document).ready(function() {
   window.painter = new window.PaintMaster({
     applyOnImage: true,
     backgroundUrl: $('img').attr('src'),
-    id: 'testme'
+    id: 'testme',
+    width: 100,
+    height: 100,
+    position: 'top'
   });
   painter.addToolboxItem(PaintMasterPlugin.tools.ClipboardImagePaste);
   painter.addToolboxItem(PaintMasterPlugin.tools.DrawingModeSwitch);

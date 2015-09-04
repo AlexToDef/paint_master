@@ -1,6 +1,6 @@
 window.PaintMasterPlugin.tools.AddCircle = class AddCircle extends window.PaintMasterPlugin.tools.BaseTool
   constructor: (@paintMaster) ->
-    @name = 'Add Circle'
+    @name = 'Круг'
     @id = 'add-circle'
     super(@paintMaster)
 

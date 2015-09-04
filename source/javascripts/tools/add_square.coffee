@@ -1,6 +1,6 @@
 window.PaintMasterPlugin.tools.AddSquare = class AddSquare extends window.PaintMasterPlugin.tools.BaseTool
   constructor: (@paintMaster) ->
-    @name = 'Add Square'
+    @name = 'Квадрат'
     @id = 'add-square'
     @active = false
     @canvas = @paintMaster.fCanvas
@@ -17,6 +17,7 @@ window.PaintMasterPlugin.tools.AddSquare = class AddSquare extends window.PaintM
     return
 
   mouseup: (e) ->
+    return if @canvas.getActiveObject()
     mouse = @canvas.getPointer()
     currentX = mouse.x
     currentY = mouse.y

@@ -7,10 +7,12 @@
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
-  background-color: rgba(64, 64, 64, 0.75);
+  background-color: rgba(150, 150, 180, 0.75);
   border: 1px solid rgba(100, 100, 100, 0.85); }
   .pm-toolbox.pm-toolbox-bottom {
-    bottom: -2em; }
+    bottom: -3em; }
+  .pm-toolbox.pm-toolbox-top {
+    top: -3em; }
   .pm-toolbox .pm-tool {
     height: auto;
     padding: 5px;
@@ -20,7 +22,43 @@
     margin: 5px;
     text-align: center;
     font-size: 1.5em;
-    opacity: 1; }
+    opacity: 1;
+    position: relative;
+    color: rgba(10, 10, 100, 0.75); }
+    .pm-toolbox .pm-tool.active {
+      text-shadow: 1px 1px 10px #0a0ab4; }
+      .pm-toolbox .pm-tool.active .pm-tooltip {
+        text-shadow: none; }
+    .pm-toolbox .pm-tool:hover {
+      color: #0a0a96; }
+  .pm-toolbox .pm-tooltip {
+    position: absolute;
+    top: 140%;
+    height: auto;
+    background: rgba(16, 16, 16, 0.75);
+    color: #EEE;
+    padding: 0.3em 0.5em;
+    border-radius: 5px;
+    font-size: 0.7em;
+    left: 20%;
+    min-width: 10em;
+    width: auto; }
+  .pm-toolbox .pm-tooltip {
+    overflow: visible !important; }
+    .pm-toolbox .pm-tooltip:after, .pm-toolbox .pm-tooltip:before {
+      bottom: 100%;
+      left: 10%;
+      border: solid transparent;
+      content: " ";
+      height: 0;
+      width: 0;
+      position: absolute;
+      pointer-events: none; }
+    .pm-toolbox .pm-tooltip:after {
+      border-color: rgba(16, 16, 16, 0);
+      border-bottom-color: rgba(16, 16, 16, 0.75);
+      border-width: 0.5em;
+      margin-left: -0.5em; }
 
 @font-face {
   font-family: "Flaticon";
@@ -39,14 +77,11 @@
   font-family: Flaticon;
   font-style: normal; }
 
-.pm-tool.active {
-  color: red; }
-
 .pm-tool.dr-mode-switch:before {
   content: "\e005"; }
 
 .pm-tool.select-color:before {
-  content: "\e001"; }
+  content: "\e00a"; }
 
 .pm-tool.add-square:before {
   content: "\e008"; }

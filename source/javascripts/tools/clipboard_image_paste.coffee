@@ -1,6 +1,6 @@
 window.PaintMasterPlugin.tools.ClipboardImagePaste = class ClipboardImagePaste extends window.PaintMasterPlugin.tools.BaseTool
   constructor: (@paintMaster) ->
-    @name = 'ClipboardImagePaste'
+    @name = 'Вставить картинку из буфера'
     @id = 'clipboard-image-paste'
     super(@paintMaster)
 

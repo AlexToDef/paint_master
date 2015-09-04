@@ -1,14 +1,18 @@
 window.PaintMasterPlugin.tools.AddText = class AddText extends window.PaintMasterPlugin.tools.BaseTool
   constructor: (@paintMaster) ->
-    @name = 'Add Text'
+    @name = 'Текст'
     @id = 'add-text'
     super(@paintMaster)
 
   onClick: =>
-    rect = new fabric.IText "Tap and type",
+    @iText = new fabric.IText "Tap and type",
       fontFamily: 'arial black',
       left: 100, 
       top: 100,
       fill: @currentColor()
-    @paintMaster.fCanvas.add(rect);
+    @paintMaster.fCanvas.add(@iText);
+
+  onBackspace: (e) ->
+    return if @canvas.getActiveObject() == @iText
+    super()
 

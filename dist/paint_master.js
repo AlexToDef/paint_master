@@ -429,6 +429,7 @@ window.PaintMasterPlugin.tools.AcceptCrop = AcceptCrop = (function(superClass) {
       width = this.canvas.width - left;
       left = this.canvas.width - width;
     }
+    this.canvas.deactivateAll().renderAll();
     img = this.canvas.toDataURL({
       format: 'png',
       left: left,
@@ -600,6 +601,7 @@ window.PaintMasterPlugin.tools.Crop = Crop = (function(superClass) {
       width = this.canvas.width - left;
       left = this.canvas.width - width;
     }
+    this.canvas.deactivateAll().renderAll();
     img = this.canvas.toDataURL({
       format: 'png',
       left: left,
@@ -616,6 +618,10 @@ window.PaintMasterPlugin.tools.Crop = Crop = (function(superClass) {
     }).bind(this.canvas));
     Crop.__super__.onSubmit.call(this);
     return this.deactivate();
+  };
+
+  Crop.prototype.onBackspace = function(e) {
+    return 1;
   };
 
   return Crop;

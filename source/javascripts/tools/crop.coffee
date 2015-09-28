@@ -28,6 +28,8 @@ window.PaintMasterPlugin.tools.AcceptCrop = class AcceptCrop extends window.Pain
       width = @canvas.width - left
       left = @canvas.width - width
 
+    @canvas.deactivateAll().renderAll()
+
     img = @canvas.toDataURL({
       format: 'png',
       left: left,
@@ -182,6 +184,8 @@ window.PaintMasterPlugin.tools.Crop = class Crop extends window.PaintMasterPlugi
       width = @canvas.width - left
       left = @canvas.width - width
 
+    @canvas.deactivateAll().renderAll()
+
     img = @canvas.toDataURL({
       format: 'png',
       left: left,
@@ -201,5 +205,8 @@ window.PaintMasterPlugin.tools.Crop = class Crop extends window.PaintMasterPlugi
     ).bind(@canvas)
     super()
     @deactivate()
+
+  onBackspace: (e) ->
+    1
 
 

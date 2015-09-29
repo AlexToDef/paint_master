@@ -11,6 +11,7 @@
     "gulp-consolidate": "^0.1.2",
     "gulp-copy": "0.0.2",
     "gulp-sass": "^2.0.4",
+    "gulp-sassbeautify": "^0.1.0",
     "gulp-scss": "^1.2.0",
     "gulp-util": "^3.0.6",
     "gulp-watch": "^4.3.5"

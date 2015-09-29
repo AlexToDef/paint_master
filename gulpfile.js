@@ -52,6 +52,12 @@ gulp.task('sass', function () {
     .pipe(gulp.dest('dist/'));
 });
 
+gulp.task('beautify-scss', function () {
+  gulp.src('source/stylesheets/**/*.scss')
+    .pipe(sassbeautify())
+    .pipe(gulp.dest('source'))
+})
+
 gulp.task('watch', function () {
     watch('source/**/*.*', batch(function (events, done) {
         gulp.start('build', done);

@@ -1,6 +1,6 @@
 window.PaintMasterPlugin.tools.AddSquare = class AddSquare extends window.PaintMasterPlugin.tools.BaseTool
   constructor: (@paintMaster) ->
-    @name = 'Квадрат'
+    @name = 'Прямоугольник'
     @id = 'add-square'
     @active = false
     @canvas = @paintMaster.fCanvas

@@ -18,14 +18,23 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
     @fCanvas.renderAll()
 
   drawToolbox: ->
-    console.log 'drawToolbox'
-    console.log @wrapperEl
-    html = "<div class='pm-toolbox pm-toolbox-#{@opts.position}'></div>"
-    @toolboxEl = $(html).appendTo @wrapperEl
+    html = "
+      <div class='pm-toolbox-wrapper pm-toolbox-#{@opts.position}'>
+        <div class='pm-toolbox'></div>
+        <div class='pm-current-tool'>
+          <span> Current tool: </span>
+          <span class='pm-current-tool-name'></span> 
+        </div>
+      </div>
+    "
+    if @opts.position == 'top'
+      @toolboxEl = $(html).insertBefore(@wrapperEl).find('.pm-toolbox')
+      @currentToolNameEl = $(@toolboxEl).parent().find('.pm-current-tool-name')
+      @containerEl = $('.pm-toolbox-wrapper, .canvas-container').wrapAll('<div class="container"></div>')
 
   setToolboxEventListeners: ->
     self = @
-    $(@wrapperEl).on 'click', '.pm-toolbox .pm-tool', (e) ->
+    $(@containerEl).on 'click', '.pm-toolbox .pm-tool', (e) ->
       toolId = $(this).data('pmToolId')
       self.toolbox[toolId].onClick(e)
       if self.activeTool == self.toolbox[toolId]
@@ -35,15 +44,15 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
         self.toolbox[toolId].activate()
         self.activeTool = self.toolbox[toolId]
 
-    $(@wrapperEl).on 'change', 'input', (e) ->
+    $(@containerEl).on 'change', 'input', (e) ->
       toolId = $(this).parent().data('pmToolId')
       self.toolbox[toolId].onChange(e)
 
-    $(@wrapperEl).on 'mouseover', '.pm-tool', (e) ->
+    $(@containerEl).on 'mouseover', '.pm-tool', (e) ->
       toolId = $(this).data('pmToolId')
       self.toolbox[toolId].onMouseover(e)
 
-    $(@wrapperEl).on 'mouseleave', '.pm-tool', (e) ->
+    $(@containerEl).on 'mouseleave', '.pm-tool', (e) ->
       toolId = $(this).data('pmToolId')
       self.toolbox[toolId].onMouseleave(e)
 

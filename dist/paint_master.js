@@ -1,4 +1,4 @@
-var AcceptCrop, AddCircle, AddSquare, AddText, BaseTool, ClipboardImagePaste, Crop, DrawCircle, DrawingModeSwitch, OpenSettings, PaintMaster, SelectColor,
+var AddCircle, AddSquare, AddText, BaseTool, ClipboardImagePaste, Crop, DrawCircle, DrawingModeSwitch, OpenSettings, PaintMaster, SelectColor,
   bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -24,16 +24,18 @@ window.PaintMasterPlugin.PaintMaster = PaintMaster = (function() {
 
   PaintMaster.prototype.drawToolbox = function() {
     var html;
-    console.log('drawToolbox');
-    console.log(this.wrapperEl);
-    html = "<div class='pm-toolbox pm-toolbox-" + this.opts.position + "'></div>";
-    return this.toolboxEl = $(html).appendTo(this.wrapperEl);
+    html = "<div class='pm-toolbox-wrapper pm-toolbox-" + this.opts.position + "'> <div class='pm-toolbox'></div> <div class='pm-current-tool'> <span> Current tool: </span> <span class='pm-current-tool-name'></span> </div> </div>";
+    if (this.opts.position === 'top') {
+      this.toolboxEl = $(html).insertBefore(this.wrapperEl).find('.pm-toolbox');
+      this.currentToolNameEl = $(this.toolboxEl).parent().find('.pm-current-tool-name');
+      return this.containerEl = $('.pm-toolbox-wrapper, .canvas-container').wrapAll('<div class="container"></div>');
+    }
   };
 
   PaintMaster.prototype.setToolboxEventListeners = function() {
     var onKeyDownHandler, self;
     self = this;
-    $(this.wrapperEl).on('click', '.pm-toolbox .pm-tool', function(e) {
+    $(this.containerEl).on('click', '.pm-toolbox .pm-tool', function(e) {
       var key, ref, tool, toolId;
       toolId = $(this).data('pmToolId');
       self.toolbox[toolId].onClick(e);
@@ -49,17 +51,17 @@ window.PaintMasterPlugin.PaintMaster = PaintMaster = (function() {
         return self.activeTool = self.toolbox[toolId];
       }
     });
-    $(this.wrapperEl).on('change', 'input', function(e) {
+    $(this.containerEl).on('change', 'input', function(e) {
       var toolId;
       toolId = $(this).parent().data('pmToolId');
       return self.toolbox[toolId].onChange(e);
     });
-    $(this.wrapperEl).on('mouseover', '.pm-tool', function(e) {
+    $(this.containerEl).on('mouseover', '.pm-tool', function(e) {
       var toolId;
       toolId = $(this).data('pmToolId');
       return self.toolbox[toolId].onMouseover(e);
     });
-    $(this.wrapperEl).on('mouseleave', '.pm-tool', function(e) {
+    $(this.containerEl).on('mouseleave', '.pm-tool', function(e) {
       var toolId;
       toolId = $(this).data('pmToolId');
       return self.toolbox[toolId].onMouseleave(e);
@@ -202,11 +204,14 @@ window.PaintMasterPlugin.tools.BaseTool = BaseTool = (function() {
       tool.deactivate();
     }
     $(".pm-tool." + this.id).addClass('active');
+    this.paintMaster.currentToolNameEl.html(this.name);
     return this.active = true;
   };
 
   BaseTool.prototype.deactivate = function() {
     $(".pm-tool." + this.id).removeClass('active');
+    this.paintMaster.currentToolNameEl.html('');
+    this.paintMaster.activeTool = null;
     return this.active = false;
   };
 
@@ -256,7 +261,7 @@ window.PaintMasterPlugin.tools.AddSquare = AddSquare = (function(superClass) {
   function AddSquare(paintMaster) {
     this.paintMaster = paintMaster;
     this.onClick = bind(this.onClick, this);
-    this.name = 'Квадрат';
+    this.name = 'Прямоугольник';
     this.id = 'add-square';
     this.active = false;
     this.canvas = this.paintMaster.fCanvas;
@@ -352,7 +357,7 @@ window.PaintMasterPlugin.tools.ClipboardImagePaste = ClipboardImagePaste = (func
 
   function ClipboardImagePaste(paintMaster) {
     this.paintMaster = paintMaster;
-    this.name = 'Вставить картинку из буфера';
+    this.name = 'Вставить картинку из буфера (CTRL-V)';
     this.id = 'clipboard-image-paste';
     ClipboardImagePaste.__super__.constructor.call(this, this.paintMaster);
   }
@@ -402,72 +407,12 @@ window.PaintMasterPlugin.tools.ClipboardImagePaste = ClipboardImagePaste = (func
 
 })(window.PaintMasterPlugin.tools.BaseTool);
 
-window.PaintMasterPlugin.tools.AcceptCrop = AcceptCrop = (function(superClass) {
-  extend(AcceptCrop, superClass);
-
-  function AcceptCrop(paintMaster) {
-    this.paintMaster = paintMaster;
-    this.name = 'Обрезать';
-    this.id = 'accept-crop';
-    this.canvas = this.paintMaster.fCanvas;
-    AcceptCrop.__super__.constructor.call(this, this.paintMaster);
-  }
-
-  AcceptCrop.prototype.activate = function() {
-    var ctx, height, img, left, scaleX, scaleY, top, width;
-    this.trueSight = this.canvas._objects[this.canvas._objects.length - 1];
-    width = this.trueSight.width * this.trueSight.scaleX;
-    height = this.trueSight.height * this.trueSight.scaleY;
-    left = this.trueSight.left;
-    top = this.trueSight.top;
-    scaleX = this.trueSight.scaleX;
-    scaleY = this.trueSight.scaleY;
-    ctx = this.canvas.contextTop || this.canvas.contextContainer;
-    if (top < 0) {
-      height = height + top;
-      top = 0;
-    }
-    if (left < 0) {
-      width = width + left;
-      left = 0;
-    }
-    if ((top + height) > this.canvas.height) {
-      height = this.canvas.height - top;
-      top = this.canvas.height - height;
-    }
-    if ((left + width) > this.canvas.width) {
-      width = this.canvas.width - left;
-      left = this.canvas.width - width;
-    }
-    this.canvas.deactivateAll().renderAll();
-    img = this.canvas.toDataURL({
-      format: 'png',
-      left: left,
-      top: top,
-      width: width,
-      height: height,
-      crossOrigin: 'anonymous'
-    });
-    this.canvas.clear().renderAll();
-    this.canvas.setWidth(width * scaleX);
-    this.canvas.setHeight(height * scaleY);
-    this.canvas.setBackgroundImage(img, (function() {
-      return this.renderAll();
-    }).bind(this.canvas));
-    AcceptCrop.__super__.activate.call(this);
-    return this.deactivate();
-  };
-
-  return AcceptCrop;
-
-})(window.PaintMasterPlugin.tools.BaseTool);
-
 window.PaintMasterPlugin.tools.Crop = Crop = (function(superClass) {
   extend(Crop, superClass);
 
   function Crop(paintMaster) {
     this.paintMaster = paintMaster;
-    this.name = 'Обрезать';
+    this.name = 'Обрезать картинку. Enter - применить, backspace - отмена.';
     this.id = 'crop';
     this.canvas = this.paintMaster.fCanvas;
     this.shadeFill = '5E5E5E';
@@ -631,7 +576,7 @@ window.PaintMasterPlugin.tools.Crop = Crop = (function(superClass) {
   };
 
   Crop.prototype.onBackspace = function(e) {
-    return 1;
+    return this.deactivate();
   };
 
   return Crop;

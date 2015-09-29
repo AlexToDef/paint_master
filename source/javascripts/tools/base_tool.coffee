@@ -38,10 +38,13 @@ window.PaintMasterPlugin.tools.BaseTool = class BaseTool
   activate: =>
     tool.deactivate() for key, tool of @paintMaster.toolbox
     $(".pm-tool.#{@id}").addClass('active')
+    @paintMaster.currentToolNameEl.html(@name)
     @active = true
 
   deactivate: =>
     $(".pm-tool.#{@id}").removeClass('active')
+    @paintMaster.currentToolNameEl.html('')
+    @paintMaster.activeTool = null
     @active = false
 
   mousedown: (e) ->

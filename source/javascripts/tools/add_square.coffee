@@ -36,7 +36,9 @@ window.PaintMasterPlugin.tools.AddSquare = class AddSquare extends window.PaintM
       fill: '',
       stroke: @currentColor(),
       strokeWidth: @currentWidth())
-    @paintMaster.fCanvas.add(square);
+    @paintMaster.fCanvas.add(square)
+    @canvas.deactivateAll().renderAll()
+    @canvas.setActiveObject(@canvas._objects[@canvas._objects.length - 1])
     return
 
   onClick: =>

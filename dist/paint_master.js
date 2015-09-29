@@ -241,7 +241,9 @@ window.PaintMasterPlugin.tools.AddCircle = AddCircle = (function(superClass) {
       fill: '',
       strokeWidth: this.currentWidth()
     });
-    return this.paintMaster.fCanvas.add(circle);
+    this.paintMaster.fCanvas.add(circle);
+    this.canvas.deactivateAll().renderAll();
+    return this.canvas.setActiveObject(this.canvas._objects[this.canvas._objects.length - 1]);
   };
 
   return AddCircle;
@@ -297,6 +299,8 @@ window.PaintMasterPlugin.tools.AddSquare = AddSquare = (function(superClass) {
       strokeWidth: this.currentWidth()
     });
     this.paintMaster.fCanvas.add(square);
+    this.canvas.deactivateAll().renderAll();
+    this.canvas.setActiveObject(this.canvas._objects[this.canvas._objects.length - 1]);
   };
 
   AddSquare.prototype.onClick = function() {};
@@ -310,6 +314,8 @@ window.PaintMasterPlugin.tools.AddText = AddText = (function(superClass) {
 
   function AddText(paintMaster) {
     this.paintMaster = paintMaster;
+    this.deactivate = bind(this.deactivate, this);
+    this.activate = bind(this.activate, this);
     this.onClick = bind(this.onClick, this);
     this.name = 'Текст';
     this.id = 'add-text';
@@ -332,6 +338,10 @@ window.PaintMasterPlugin.tools.AddText = AddText = (function(superClass) {
     }
     return AddText.__super__.onBackspace.call(this);
   };
+
+  AddText.prototype.activate = function() {};
+
+  AddText.prototype.deactivate = function() {};
 
   return AddText;
 
@@ -689,7 +699,9 @@ window.PaintMasterPlugin.tools.DrawCircle = DrawCircle = (function(superClass) {
       fill: '',
       strokeWidth: this.currentWidth()
     });
-    return this.canvas.add(circle);
+    this.canvas.add(circle);
+    this.canvas.deactivateAll().renderAll();
+    return this.canvas.setActiveObject(this.canvas._objects[this.canvas._objects.length - 1]);
   };
 
   return DrawCircle;

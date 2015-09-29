@@ -1,14 +1,22 @@
 .pm-toolbox {
   border-radius: 5px;
   background-color: #5E5E5E;
-  border: 1px solid #0e0e0e;
   width: 25em;
   position: absolute;
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
-  background-color: rgba(150, 150, 180, 0.75);
-  border: 1px solid rgba(100, 100, 100, 0.85); }
+  border: 1px solid rgba(100, 100, 100, 0.35);
+  background-color: rgba(100, 100, 100, 0.6);
+  background-color: #ffffff;
+  background: #eeeeee;
+  background: -moz-linear-gradient(top, #eeeeee 0%, #cccccc 100%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #eeeeee), color-stop(100%, #cccccc));
+  background: -webkit-linear-gradient(top, #eeeeee 0%, #cccccc 100%);
+  background: -o-linear-gradient(top, #eeeeee 0%, #cccccc 100%);
+  background: -ms-linear-gradient(top, #eeeeee 0%, #cccccc 100%);
+  background: linear-gradient(to bottom, #eeeeee 0%, #cccccc 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#cccccc',GradientType=0 ); }
   .pm-toolbox.pm-toolbox-bottom {
     bottom: -3em; }
   .pm-toolbox.pm-toolbox-top {
@@ -24,13 +32,13 @@
     font-size: 1.5em;
     opacity: 1;
     position: relative;
-    color: rgba(10, 10, 100, 0.75); }
+    color: rgba(100, 100, 100, 0.85); }
     .pm-toolbox .pm-tool.active {
-      text-shadow: 1px 1px 10px #0a0ab4; }
+      color: rgba(10, 10, 100, 0.75); }
       .pm-toolbox .pm-tool.active .pm-tooltip {
         text-shadow: none; }
     .pm-toolbox .pm-tool:hover {
-      color: #0a0a96; }
+      color: rgba(10, 10, 100, 0.75); }
   .pm-toolbox .pm-tooltip {
     position: absolute;
     top: 140%;

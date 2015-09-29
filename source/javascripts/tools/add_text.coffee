@@ -16,3 +16,8 @@ window.PaintMasterPlugin.tools.AddText = class AddText extends window.PaintMaste
     return if @canvas.getActiveObject() == @iText
     super()
 
+  activate: =>
+    return
+
+  deactivate: =>
+    return

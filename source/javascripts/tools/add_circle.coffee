@@ -12,4 +12,6 @@ window.PaintMasterPlugin.tools.AddCircle = class AddCircle extends window.PaintM
       stroke: @currentColor(),
       fill: '',
       strokeWidth: @currentWidth()
-    @paintMaster.fCanvas.add(circle);
+    @paintMaster.fCanvas.add(circle)
+    @canvas.deactivateAll().renderAll()
+    @canvas.setActiveObject(@canvas._objects[@canvas._objects.length - 1])

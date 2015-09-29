@@ -42,6 +42,8 @@ window.PaintMasterPlugin.tools.DrawCircle = class DrawCircle extends window.Pain
       fill: '',
       strokeWidth: @currentWidth()
     @canvas.add circle
+    @canvas.deactivateAll().renderAll()
+    @canvas.setActiveObject(@canvas._objects[@canvas._objects.length - 1])
 
 
 

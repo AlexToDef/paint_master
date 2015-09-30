@@ -43,7 +43,7 @@ window.PaintMasterPlugin.tools.DrawCircle = class DrawCircle extends window.Pain
       strokeWidth: @currentWidth()
     @canvas.add circle
     @canvas.deactivateAll().renderAll()
-    @canvas.setActiveObject(@canvas._objects[@canvas._objects.length - 1])
+    @canvas.setActiveObject(@canvas._objects[@canvas._objects.length - 1]) if rx > 0 or ry > 0
 
 
 

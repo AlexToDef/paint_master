@@ -3,6 +3,11 @@ window.PaintMasterPlugin.tools = {}
 window.PaintMasterPlugin.PaintMaster = class PaintMaster
   constructor: (@opts) ->
     @toolbox = {}
+    @settings =
+      canvasWidth: @opts.width
+      canvasHeight: @opts.height
+      fontSize: 16
+      brushSize: 5
 
     @fCanvas = new fabric.Canvas(@opts.id)
 
@@ -11,6 +16,7 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
     @drawToolbox()
     @setToolboxEventListeners()
     @setDrawListeners()
+    @setAttributeListeners()
 
     @fCanvas.setWidth @opts.width
     @fCanvas.setHeight @opts.height
@@ -21,16 +27,21 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
     html = "
       <div class='pm-toolbox-wrapper pm-toolbox-#{@opts.position}'>
         <div class='pm-toolbox'></div>
-        <div class='pm-current-tool'>
-          <span> Current tool: </span>
-          <span class='pm-current-tool-name'></span> 
+        <div class='pm-block pm-current-tool hidden'>
+          <div class='icon'>
+          </div>
+          <div class='desc'>
+            <span class='pm-current-tool-name'></span> 
+          </div>
+          <div style='clear: both'></div>
         </div>
       </div>
     "
-    if @opts.position == 'top'
+    if @opts.position == 'top' or @opts.position == 'left'
       @toolboxEl = $(html).insertBefore(@wrapperEl).find('.pm-toolbox')
       @currentToolNameEl = $(@toolboxEl).parent().find('.pm-current-tool-name')
-      @containerEl = $('.pm-toolbox-wrapper, .canvas-container').wrapAll('<div class="container"></div>')
+      @currentToolEl = $(@toolboxEl).parent().find('.pm-current-tool')
+      @containerEl = $('.pm-toolbox-wrapper, .canvas-container').wrapAll("<div class='pm-main-container pm-main-container-#{@opts.position}'></div>")
 
   setToolboxEventListeners: ->
     self = @
@@ -46,7 +57,7 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
 
     $(@containerEl).on 'change', 'input', (e) ->
       toolId = $(this).parent().data('pmToolId')
-      self.toolbox[toolId].onChange(e)
+      self.toolbox[toolId].onChange(e) if toolId
 
     $(@containerEl).on 'mouseover', '.pm-tool', (e) ->
       toolId = $(this).data('pmToolId')
@@ -59,13 +70,15 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
     onKeyDownHandler = (e) ->
       switch e.keyCode
         when 46, 8
-          if self.fCanvas.getActiveObject()
+          if self.fCanvas.getActiveObject() or self.fCanvas.getActiveGroup()
             e.preventDefault()
             if self.activeTool
               self.activeTool.onBackspace(e)
             else
               activeObject = self.fCanvas.getActiveObject()
               self.fCanvas.remove activeObject
+              for activeGroupObject in self.fCanvas.getActiveGroup().objects
+                self.fCanvas.deactivateAll().remove(activeGroupObject).renderAll()
         when 13
           if self.fCanvas.getActiveObject() and self.activeTool
             e.preventDefault()
@@ -92,6 +105,7 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
     delete @toolbox[itemId]
 
   exportImage: (format) ->
+    @fCanvas.deactivateAll().renderAll()
     img = @fCanvas.toDataURL({
       format: format,
       left: 0,
@@ -100,3 +114,33 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
       height: @fCanvas.height
     })
     return img
+
+  setAttributeListeners: ->
+    self = @
+    for name, oldVal of @settings
+      tmpname = name.toString()
+      @testor(@settings, name)
+
+  settingChanged: (name, oldVal, newVal) ->
+    @activeTool.onSettingsChange()
+    switch name
+      when 'canvasWidth'
+        @fCanvas.setWidth parseInt(newVal)
+      when 'canvasHeight'
+        @fCanvas.setHeight parseInt(newVal)
+      when 'brushSize'
+        @fCanvas.freeDrawingBrush.width = parseInt(newVal)
+      when 'color'
+        @fCanvas.freeDrawingBrush.color = parseInt(newVal)
+
+  testor: (obj, propName) ->
+    self = @
+    savedVal = obj["#{propName}"]
+    Object.defineProperty obj, propName, {
+      get: ->
+        obj["_#{propName}"]
+      set: (newVal) ->
+        self.settingChanged(propName, obj["_#{propName}"], newVal)
+        obj["_#{propName}"] = newVal
+    }
+    obj["_#{propName}"] = savedVal

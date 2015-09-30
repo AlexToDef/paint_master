@@ -11,5 +11,5 @@ window.PaintMasterPlugin.tools.SelectColor = class SelectColor extends window.Pa
   onChange: (e) =>
     @paintMaster.selectedColor = e.currentTarget.value
     @paintMaster.fCanvas.freeDrawingBrush.color = e.currentTarget.value
-    @paintMaster.wrapperEl.find('.pm-tool.select-color').css('color', e.currentTarget.value)
+    @paintMaster.toolboxEl.find('.pm-tool.select-color').css('color', e.currentTarget.value)
     

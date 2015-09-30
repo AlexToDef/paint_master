@@ -8,6 +8,7 @@ var consolidate = require('gulp-consolidate');
 var gutil = require('gulp-util');
 var watch = require('gulp-watch');
 var batch = require('gulp-batch');
+var csscomb = require('gulp-csscomb');
 
 gulp.task('build', function() {
   gulp.src([
@@ -23,7 +24,8 @@ gulp.task('build', function() {
   gulp.src([
       'source/stylesheets/toolbox.sass',
       'source/stylesheets/icon_font.sass',
-      'source/stylesheets/tools.sass'
+      'source/stylesheets/tools.sass',
+      'source/stylesheets/positioning.sass'
       ])
     .pipe(concat('paint_master.sass'))
     .pipe(sass().on('error', sass.logError))
@@ -52,11 +54,11 @@ gulp.task('sass', function () {
     .pipe(gulp.dest('dist/'));
 });
 
-gulp.task('beautify-scss', function () {
-  gulp.src('source/stylesheets/**/*.scss')
-    .pipe(sassbeautify())
-    .pipe(gulp.dest('source'))
-})
+gulp.task( 'csscombsass', function( ){
+    return gulp.src( 'source/stylesheets/*.sass' )
+               .pipe( csscomb( ) )
+               .pipe( gulp.dest('source/stylesheets') );
+} );
 
 gulp.task('watch', function () {
     watch('source/**/*.*', batch(function (events, done) {

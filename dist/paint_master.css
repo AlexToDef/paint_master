@@ -1,3 +1,6 @@
+canvas {
+  border: 1px solid black; }
+
 .pm-toolbox-wrapper {
   border-radius: 5px;
   position: relative;
@@ -40,35 +43,90 @@
       color: rgba(10, 10, 100, 0.75); }
   .pm-toolbox .pm-tooltip {
     position: absolute;
-    top: 140%;
     height: auto;
     background: rgba(16, 16, 16, 0.75);
     color: #EEE;
     padding: 0.3em 0.5em;
     border-radius: 5px;
     font-size: 0.7em;
-    left: 20%;
     min-width: 10em;
     width: auto; }
+    .pm-toolbox .pm-tooltip.pm-tooltip-bottom {
+      top: 140%;
+      left: 20%; }
+      .pm-toolbox .pm-tooltip.pm-tooltip-bottom:after, .pm-toolbox .pm-tooltip.pm-tooltip-bottom:before {
+        bottom: 100%;
+        left: 10%;
+        border: solid transparent;
+        content: " ";
+        height: 0;
+        width: 0;
+        position: absolute;
+        pointer-events: none; }
+      .pm-toolbox .pm-tooltip.pm-tooltip-bottom:after {
+        border-color: rgba(16, 16, 16, 0);
+        border-bottom-color: rgba(16, 16, 16, 0.75);
+        border-width: 0.5em;
+        margin-left: -0.5em; }
+    .pm-toolbox .pm-tooltip.pm-tooltip-top {
+      bottom: 140%; }
+      .pm-toolbox .pm-tooltip.pm-tooltip-top:after, .pm-toolbox .pm-tooltip.pm-tooltip-top:before {
+        top: 100%;
+        left: 10%;
+        border: 1px solid transparent;
+        content: '';
+        height: 0;
+        width: 0;
+        position: absolute;
+        pointer-events: none; }
+      .pm-toolbox .pm-tooltip.pm-tooltip-top:after {
+        border-color: rgba(16, 16, 16, 0);
+        border-top-color: rgba(16, 16, 16, 0.75);
+        border-width: 0.5em;
+        margin-left: -0.5em; }
   .pm-toolbox .pm-tooltip {
     overflow: visible !important; }
-    .pm-toolbox .pm-tooltip:after, .pm-toolbox .pm-tooltip:before {
-      bottom: 100%;
-      left: 10%;
-      border: solid transparent;
-      content: " ";
-      height: 0;
-      width: 0;
-      position: absolute;
-      pointer-events: none; }
-    .pm-toolbox .pm-tooltip:after {
-      border-color: rgba(16, 16, 16, 0);
-      border-bottom-color: rgba(16, 16, 16, 0.75);
-      border-width: 0.5em;
-      margin-left: -0.5em; }
 
-.pm-current-tool {
-  padding: 10px; }
+.pm-block {
+  padding: 5px 10px;
+  margin: 10px;
+  border: 1px solid #999;
+  background-color: #CCC;
+  box-shadow: inset 2px 2px 5px #AAA;
+  border-radius: 5px;
+  display: flex;
+  align-items: center; }
+  .pm-block.hidden {
+    display: none; }
+  .pm-block.pm-current-tool .icon {
+    flex: 1;
+    width: auto;
+    padding: 0px 10px;
+    font-size: 2em;
+    text-align: center;
+    font-family: Flaticon;
+    color: rgba(10, 10, 100, 0.75); }
+  .pm-block.pm-current-tool .desc {
+    flex: 4;
+    padding-left: 10px;
+    border-left: 1px solid #5e5e5e; }
+  .pm-block.pm-settings {
+    flex-direction: column;
+    align-items: initial; }
+    .pm-block.pm-settings .pm-settings-element {
+      display: table;
+      clear: both; }
+      .pm-block.pm-settings .pm-settings-element label {
+        display: table-cell;
+        text-align: left;
+        width: 40%; }
+      .pm-block.pm-settings .pm-settings-element span {
+        display: table-cell;
+        vertical-align: middle;
+        width: 20%; }
+        .pm-block.pm-settings .pm-settings-element span.pm-settings-input-container {
+          padding-left: 15px;
+          width: 40%; }
 
 @font-face {
   font-family: "Flaticon";
@@ -83,44 +141,44 @@
   font-style: normal;
   margin-left: 20px; }
 
-.pm-tool:before {
+.pm-tool:before, .pm-current-tool .icon:before {
   font-family: Flaticon;
   font-style: normal; }
 
-.pm-tool.dr-mode-switch:before {
+.pm-tool.dr-mode-switch:before, .pm-current-tool .icon.dr-mode-switch:before {
   content: "\e005"; }
 
-.pm-tool.select-color:before {
+.pm-tool.select-color:before, .pm-current-tool .icon.select-color:before {
   content: "\e00a"; }
 
-.pm-tool.add-square:before {
+.pm-tool.add-square:before, .pm-current-tool .icon.add-square:before {
   content: "\e008"; }
 
-.pm-tool.add-circle:before {
+.pm-tool.add-circle:before, .pm-current-tool .icon.add-circle:before {
   content: "\e00b"; }
 
-.pm-tool.draw-circle:before {
+.pm-tool.draw-circle:before, .pm-current-tool .icon.draw-circle:before {
   content: "\e00b"; }
 
-.pm-tool.add-text:before {
+.pm-tool.add-text:before, .pm-current-tool .icon.add-text:before {
   content: "\e011"; }
 
-.pm-tool.open-settings:before {
+.pm-tool.open-settings:before, .pm-current-tool .icon.open-settings:before {
   content: "\e00d"; }
 
-.pm-tool.crop:before {
+.pm-tool.crop:before, .pm-current-tool .icon.crop:before {
   content: "\e002"; }
 
-.pm-tool.save:before {
+.pm-tool.save:before, .pm-current-tool .icon.save:before {
   content: "\e007"; }
 
-.pm-tool.reset:before {
+.pm-tool.reset:before, .pm-current-tool .icon.reset:before {
   content: "\e000"; }
 
-.pm-tool.accept-crop:before {
+.pm-tool.accept-crop:before, .pm-current-tool .icon.accept-crop:before {
   content: "\e00e"; }
 
-.pm-tool.clipboard-image-paste:before {
+.pm-tool.clipboard-image-paste:before, .pm-current-tool .icon.clipboard-image-paste:before {
   content: "\e010"; }
 
 .pm-tool.select-color {
@@ -133,3 +191,9 @@
   position: relative;
   width: 100px;
   height: 100px; }
+
+.pm-main-container.pm-main-container-left {
+  display: flex;
+  align-items: flex-start; }
+  .pm-main-container.pm-main-container-left .canvas-container {
+    margin-left: 5px; }

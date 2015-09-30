@@ -38,7 +38,7 @@ window.PaintMasterPlugin.tools.AddSquare = class AddSquare extends window.PaintM
       strokeWidth: @currentWidth())
     @paintMaster.fCanvas.add(square)
     @canvas.deactivateAll().renderAll()
-    @canvas.setActiveObject(@canvas._objects[@canvas._objects.length - 1])
+    @canvas.setActiveObject(@canvas._objects[@canvas._objects.length - 1]) if width > 0 or height > 0
     return
 
   onClick: =>

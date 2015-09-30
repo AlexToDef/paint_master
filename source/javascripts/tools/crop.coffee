@@ -1,6 +1,7 @@
 window.PaintMasterPlugin.tools.Crop = class Crop extends window.PaintMasterPlugin.tools.BaseTool
   constructor: (@paintMaster) ->
-    @name = 'Обрезать картинку. Enter - применить, backspace - отмена.'
+    @name = 'Обрезать картинку'
+    @help = 'Выберите участок, который должен остаться </br> Enter - применить </br> Backspace - отмена'
     @id = 'crop'
     @canvas = @paintMaster.fCanvas
     @shadeFill = '5E5E5E'

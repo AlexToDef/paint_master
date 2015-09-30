@@ -3,9 +3,9 @@ $(document).ready ->
     applyOnImage: true,
     backgroundUrl: $('img').attr('src'),
     id: 'testme',
-    width: 100,
-    height: 100,
-    position: 'top'
+    width: 500,
+    height: 500,
+    position: 'left'
 
   painter.addToolboxItem PaintMasterPlugin.tools.ClipboardImagePaste
   painter.addToolboxItem PaintMasterPlugin.tools.DrawingModeSwitch

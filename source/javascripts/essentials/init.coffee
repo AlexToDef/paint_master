@@ -10,8 +10,8 @@ $(document).ready ->
   painter.addToolboxItem PaintMasterPlugin.tools.ClipboardImagePaste
   painter.addToolboxItem PaintMasterPlugin.tools.DrawingModeSwitch
   painter.addToolboxItem PaintMasterPlugin.tools.Crop
-  painter.addToolboxItem PaintMasterPlugin.tools.AddSquare
-  painter.addToolboxItem PaintMasterPlugin.tools.DrawCircle
+  painter.addToolboxItem PaintMasterPlugin.tools.DrawRect
+  painter.addToolboxItem PaintMasterPlugin.tools.DrawEllipse
   painter.addToolboxItem PaintMasterPlugin.tools.AddText
-  painter.addToolboxItem PaintMasterPlugin.tools.SelectColor
   painter.addToolboxItem PaintMasterPlugin.tools.OpenSettings
+  painter.addToolboxItem PaintMasterPlugin.tools.ChooseColor

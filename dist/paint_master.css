@@ -5,27 +5,30 @@ canvas {
   border-radius: 5px;
   position: relative;
   margin-bottom: 5px;
-  width: 25em;
+  min-width: 25em;
   border: 1px solid rgba(100, 100, 100, 0.35);
   background-color: rgba(100, 100, 100, 0.6);
   background-color: #ffffff;
   background: #eeeeee;
-  background: -moz-linear-gradient(top, #eeeeee 0%, #cccccc 100%);
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #eeeeee), color-stop(100%, #cccccc));
-  background: -webkit-linear-gradient(top, #eeeeee 0%, #cccccc 100%);
-  background: -o-linear-gradient(top, #eeeeee 0%, #cccccc 100%);
-  background: -ms-linear-gradient(top, #eeeeee 0%, #cccccc 100%);
   background: linear-gradient(to bottom, #eeeeee 0%, #cccccc 100%);
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#cccccc',GradientType=0 );
   z-index: 1000; }
 
 .pm-toolbox {
+  display: -webkit-flex;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
   flex-direction: row;
+  -webkit-justify-content: flex-start;
+  -ms-flex-pack: start;
   justify-content: flex-start; }
   .pm-toolbox .pm-tool {
     height: auto;
     padding: 5px;
+    -webkit-flex: 0 0 1em;
+    -ms-flex: 0 0 1em;
     flex: 0 0 1em;
     height: 1em;
     line-height: 1em;
@@ -94,11 +97,17 @@ canvas {
   background-color: #CCC;
   box-shadow: inset 2px 2px 5px #AAA;
   border-radius: 5px;
+  display: -webkit-flex;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
   align-items: center; }
   .pm-block.hidden {
     display: none; }
   .pm-block.pm-current-tool .icon {
+    -webkit-flex: 1;
+    -ms-flex: 1;
     flex: 1;
     width: auto;
     padding: 0px 10px;
@@ -107,11 +116,17 @@ canvas {
     font-family: Flaticon;
     color: rgba(10, 10, 100, 0.75); }
   .pm-block.pm-current-tool .desc {
+    -webkit-flex: 4;
+    -ms-flex: 4;
     flex: 4;
     padding-left: 10px;
     border-left: 1px solid #5e5e5e; }
   .pm-block.pm-settings {
+    -webkit-flex-direction: column;
+    -ms-flex-direction: column;
     flex-direction: column;
+    -webkit-align-items: initial;
+    -ms-flex-align: initial;
     align-items: initial; }
     .pm-block.pm-settings .pm-settings-element {
       display: table;
@@ -127,6 +142,12 @@ canvas {
         .pm-block.pm-settings .pm-settings-element span.pm-settings-input-container {
           padding-left: 15px;
           width: 40%; }
+  .pm-block.pm-choose-color .pm-choose-color-item {
+    width: 32px;
+    height: 32px;
+    margin: 0px 3px;
+    border-radius: 16px;
+    box-shadow: 0px 0px 5px #111; }
 
 @font-face {
   font-family: "Flaticon";
@@ -151,13 +172,13 @@ canvas {
 .pm-tool.select-color:before, .pm-current-tool .icon.select-color:before {
   content: "\e00a"; }
 
-.pm-tool.add-square:before, .pm-current-tool .icon.add-square:before {
+.pm-tool.choose-color:before, .pm-current-tool .icon.choose-color:before {
+  content: "\e00a"; }
+
+.pm-tool.draw-rect:before, .pm-current-tool .icon.draw-rect:before {
   content: "\e008"; }
 
-.pm-tool.add-circle:before, .pm-current-tool .icon.add-circle:before {
-  content: "\e00b"; }
-
-.pm-tool.draw-circle:before, .pm-current-tool .icon.draw-circle:before {
+.pm-tool.draw-ellipse:before, .pm-current-tool .icon.draw-ellipse:before {
   content: "\e00b"; }
 
 .pm-tool.add-text:before, .pm-current-tool .icon.add-text:before {
@@ -192,8 +213,22 @@ canvas {
   width: 100px;
   height: 100px; }
 
-.pm-main-container.pm-main-container-left {
+.pm-main-container.pm-main-container-left, .pm-main-container.pm-main-container-top {
+  display: -webkit-flex;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-align-items: flex-start;
+  -ms-flex-align: start;
   align-items: flex-start; }
-  .pm-main-container.pm-main-container-left .canvas-container {
+  .pm-main-container.pm-main-container-left .canvas-container, .pm-main-container.pm-main-container-top .canvas-container {
     margin-left: 5px; }
+
+.pm-main-container.pm-main-container-right {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: flex-start;
+  -ms-flex-align: start;
+  align-items: flex-start; }
+  .pm-main-container.pm-main-container-right .canvas-container {
+    margin-right: 5px; }

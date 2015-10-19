@@ -16,7 +16,7 @@ window.PaintMasterPlugin.tools.BaseTool = class BaseTool
     @paintMaster.wrapperEl.find("pm-tool.#{@id}").remove()
 
   onMouseover: (e) ->
-    tooltipPosition = 'top'
+    tooltipPosition = 'bottom'
     targetEl = $(e.currentTarget)
     targetEl.append("<div class='pm-tooltip pm-tooltip-#{tooltipPosition}'>#{@name}</div>") unless targetEl.find('.pm-tooltip').length > 0
 
@@ -30,8 +30,9 @@ window.PaintMasterPlugin.tools.BaseTool = class BaseTool
   onBackspace: (e) ->
     activeObject = @canvas.getActiveObject()
     @canvas.remove activeObject
-    for activeGroupObject in painter.fCanvas.getActiveGroup()
-      @canvas.remove activeGroupObject
+    if painter.fCanvas.getActiveGroup()
+      for activeGroupObject in painter.fCanvas.getActiveGroup()
+        @canvas.remove activeGroupObject
 
   onSettingsChange: (settingName, oladVal, newVal) ->
     return
@@ -46,7 +47,8 @@ window.PaintMasterPlugin.tools.BaseTool = class BaseTool
     parseInt(@paintMaster.settings.fontSize) || 14
 
   activate: =>
-    tool.deactivate() for key, tool of @paintMaster.toolbox
+    for key, tool of @paintMaster.toolbox
+      tool.deactivate() unless tool == @
     $(".pm-tool.#{@id}").addClass('active')
     @displayHelp()
     @active = true
@@ -77,4 +79,22 @@ window.PaintMasterPlugin.tools.BaseTool = class BaseTool
     @paintMaster.currentToolNameEl.nextAll().remove()
     @paintMaster.currentToolEl.addClass 'hidden'
     @paintMaster.currentToolEl.find('.icon').removeClass(@id)
+
+  unlockDrag: ->
+    @canvas.selection = true
+    for canvasObj in @canvas._objects
+      canvasObj.lockMovementX = false
+      canvasObj.lockMovementY = false
+      canvasObj.lockScalingX = false
+      canvasObj.lockScalingY = false
+    @canvas.renderAll()
+
+  lockDrag: ->
+    @canvas.selection = false
+    for canvasObj in @canvas._objects
+      canvasObj.lockMovementX = true
+      canvasObj.lockMovementY = true
+      canvasObj.lockScalingX = true
+      canvasObj.lockScalingY = true
+    @canvas.renderAll()
 

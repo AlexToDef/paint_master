@@ -39,9 +39,11 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
     "
     if @opts.position == 'top' or @opts.position == 'left'
       @toolboxEl = $(html).insertBefore(@wrapperEl).find('.pm-toolbox')
-      @currentToolNameEl = $(@toolboxEl).parent().find('.pm-current-tool-name')
-      @currentToolEl = $(@toolboxEl).parent().find('.pm-current-tool')
-      @containerEl = $('.pm-toolbox-wrapper, .canvas-container').wrapAll("<div class='pm-main-container pm-main-container-#{@opts.position}'></div>")
+    else if @opts.position == 'right'
+      @toolboxEl = $(html).insertAfter(@wrapperEl).find('.pm-toolbox')
+    @currentToolNameEl = $(@toolboxEl).parent().find('.pm-current-tool-name')
+    @currentToolEl = $(@toolboxEl).parent().find('.pm-current-tool')
+    @containerEl = $('.pm-toolbox-wrapper, .canvas-container').wrapAll("<div class='pm-main-container pm-main-container-#{@opts.position}'></div>")
 
   setToolboxEventListeners: ->
     self = @
@@ -77,8 +79,9 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
             else
               activeObject = self.fCanvas.getActiveObject()
               self.fCanvas.remove activeObject
-              for activeGroupObject in self.fCanvas.getActiveGroup().objects
-                self.fCanvas.deactivateAll().remove(activeGroupObject).renderAll()
+              if self.fCanvas.getActiveGroup()
+                for activeGroupObject in self.fCanvas.getActiveGroup().objects
+                  self.fCanvas.deactivateAll().remove(activeGroupObject).renderAll()
         when 13
           if self.fCanvas.getActiveObject() and self.activeTool
             e.preventDefault()
@@ -140,7 +143,11 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
       get: ->
         obj["_#{propName}"]
       set: (newVal) ->
-        self.settingChanged(propName, obj["_#{propName}"], newVal)
+        newVal = parseInt(newVal)
+        oldVal = obj["_#{propName}"]
         obj["_#{propName}"] = newVal
+        self.settingChanged(propName, oldVal, newVal)
+        event = new CustomEvent('pmSettingsChange', detail: { property: propName, oldVal: oldVal, newVal: newVal });
+        document.dispatchEvent(event)
     }
     obj["_#{propName}"] = savedVal

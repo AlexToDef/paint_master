@@ -9,6 +9,8 @@ var gutil = require('gulp-util');
 var watch = require('gulp-watch');
 var batch = require('gulp-batch');
 var csscomb = require('gulp-csscomb');
+var autoprefixer = require('gulp-autoprefixer');
+var server = require('gulp-server-livereload');
 
 gulp.task('build', function() {
   gulp.src([
@@ -29,6 +31,10 @@ gulp.task('build', function() {
       ])
     .pipe(concat('paint_master.sass'))
     .pipe(sass().on('error', sass.logError))
+    .pipe(autoprefixer({
+      browsers: ['last 2 versions'],
+      cascade: false
+    }))
     .pipe(gulp.dest('dist/'));
 
   gulp.src('source/stylesheets/fonts/*.*')
@@ -63,6 +69,15 @@ gulp.task( 'csscombsass', function( ){
 gulp.task('watch', function () {
     watch('source/**/*.*', batch(function (events, done) {
         gulp.start('build', done);
+    }));
+});
+
+gulp.task('webserver', function() {
+  gulp.src('source')
+    .pipe(server({
+      livereload: true,
+      directoryListing: true,
+      open: true
     }));
 });
 

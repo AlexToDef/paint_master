@@ -1,4 +1,4 @@
-var AddCircle, AddSquare, AddText, BaseTool, ClipboardImagePaste, Crop, DrawCircle, DrawingModeSwitch, OpenSettings, PaintMaster, SelectColor, SettingsItem,
+var AddText, BaseTool, ChooseColor, ClipboardImagePaste, Crop, DrawEllipse, DrawRect, DrawingModeSwitch, OpenSettings, PaintMaster, SelectColor, SettingsItem,
   bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -34,10 +34,12 @@ window.PaintMasterPlugin.PaintMaster = PaintMaster = (function() {
     html = "<div class='pm-toolbox-wrapper pm-toolbox-" + this.opts.position + "'> <div class='pm-toolbox'></div> <div class='pm-block pm-current-tool hidden'> <div class='icon'> </div> <div class='desc'> <span class='pm-current-tool-name'></span> </div> <div style='clear: both'></div> </div> </div>";
     if (this.opts.position === 'top' || this.opts.position === 'left') {
       this.toolboxEl = $(html).insertBefore(this.wrapperEl).find('.pm-toolbox');
-      this.currentToolNameEl = $(this.toolboxEl).parent().find('.pm-current-tool-name');
-      this.currentToolEl = $(this.toolboxEl).parent().find('.pm-current-tool');
-      return this.containerEl = $('.pm-toolbox-wrapper, .canvas-container').wrapAll("<div class='pm-main-container pm-main-container-" + this.opts.position + "'></div>");
+    } else if (this.opts.position === 'right') {
+      this.toolboxEl = $(html).insertAfter(this.wrapperEl).find('.pm-toolbox');
     }
+    this.currentToolNameEl = $(this.toolboxEl).parent().find('.pm-current-tool-name');
+    this.currentToolEl = $(this.toolboxEl).parent().find('.pm-current-tool');
+    return this.containerEl = $('.pm-toolbox-wrapper, .canvas-container').wrapAll("<div class='pm-main-container pm-main-container-" + this.opts.position + "'></div>");
   };
 
   PaintMaster.prototype.setToolboxEventListeners = function() {
@@ -88,13 +90,15 @@ window.PaintMasterPlugin.PaintMaster = PaintMaster = (function() {
             } else {
               activeObject = self.fCanvas.getActiveObject();
               self.fCanvas.remove(activeObject);
-              ref = self.fCanvas.getActiveGroup().objects;
-              results = [];
-              for (j = 0, len = ref.length; j < len; j++) {
-                activeGroupObject = ref[j];
-                results.push(self.fCanvas.deactivateAll().remove(activeGroupObject).renderAll());
+              if (self.fCanvas.getActiveGroup()) {
+                ref = self.fCanvas.getActiveGroup().objects;
+                results = [];
+                for (j = 0, len = ref.length; j < len; j++) {
+                  activeGroupObject = ref[j];
+                  results.push(self.fCanvas.deactivateAll().remove(activeGroupObject).renderAll());
+                }
+                return results;
               }
-              return results;
             }
           }
           break;
@@ -192,8 +196,19 @@ window.PaintMasterPlugin.PaintMaster = PaintMaster = (function() {
         return obj["_" + propName];
       },
       set: function(newVal) {
-        self.settingChanged(propName, obj["_" + propName], newVal);
-        return obj["_" + propName] = newVal;
+        var event, oldVal;
+        newVal = parseInt(newVal);
+        oldVal = obj["_" + propName];
+        obj["_" + propName] = newVal;
+        self.settingChanged(propName, oldVal, newVal);
+        event = new CustomEvent('pmSettingsChange', {
+          detail: {
+            property: propName,
+            oldVal: oldVal,
+            newVal: newVal
+          }
+        });
+        return document.dispatchEvent(event);
       }
     });
     return obj["_" + propName] = savedVal;
@@ -204,8 +219,8 @@ window.PaintMasterPlugin.PaintMaster = PaintMaster = (function() {
 })();
 
 window.PaintMasterPlugin.tools.BaseTool = BaseTool = (function() {
-  function BaseTool(paintMaster) {
-    this.paintMaster = paintMaster;
+  function BaseTool(paintMaster1) {
+    this.paintMaster = paintMaster1;
     this.deactivate = bind(this.deactivate, this);
     this.activate = bind(this.activate, this);
     this.currentFontSize = bind(this.currentFontSize, this);
@@ -231,7 +246,7 @@ window.PaintMasterPlugin.tools.BaseTool = BaseTool = (function() {
 
   BaseTool.prototype.onMouseover = function(e) {
     var targetEl, tooltipPosition;
-    tooltipPosition = 'top';
+    tooltipPosition = 'bottom';
     targetEl = $(e.currentTarget);
     if (!(targetEl.find('.pm-tooltip').length > 0)) {
       return targetEl.append("<div class='pm-tooltip pm-tooltip-" + tooltipPosition + "'>" + this.name + "</div>");
@@ -250,13 +265,15 @@ window.PaintMasterPlugin.tools.BaseTool = BaseTool = (function() {
     var activeGroupObject, activeObject, j, len, ref, results;
     activeObject = this.canvas.getActiveObject();
     this.canvas.remove(activeObject);
-    ref = painter.fCanvas.getActiveGroup();
-    results = [];
-    for (j = 0, len = ref.length; j < len; j++) {
-      activeGroupObject = ref[j];
-      results.push(this.canvas.remove(activeGroupObject));
+    if (painter.fCanvas.getActiveGroup()) {
+      ref = painter.fCanvas.getActiveGroup();
+      results = [];
+      for (j = 0, len = ref.length; j < len; j++) {
+        activeGroupObject = ref[j];
+        results.push(this.canvas.remove(activeGroupObject));
+      }
+      return results;
     }
-    return results;
   };
 
   BaseTool.prototype.onSettingsChange = function(settingName, oladVal, newVal) {};
@@ -278,7 +295,9 @@ window.PaintMasterPlugin.tools.BaseTool = BaseTool = (function() {
     ref = this.paintMaster.toolbox;
     for (key in ref) {
       tool = ref[key];
-      tool.deactivate();
+      if (tool !== this) {
+        tool.deactivate();
+      }
     }
     $(".pm-tool." + this.id).addClass('active');
     this.displayHelp();
@@ -312,115 +331,52 @@ window.PaintMasterPlugin.tools.BaseTool = BaseTool = (function() {
     return this.paintMaster.currentToolEl.find('.icon').removeClass(this.id);
   };
 
+  BaseTool.prototype.unlockDrag = function() {
+    var canvasObj, j, len, ref;
+    this.canvas.selection = true;
+    ref = this.canvas._objects;
+    for (j = 0, len = ref.length; j < len; j++) {
+      canvasObj = ref[j];
+      canvasObj.lockMovementX = false;
+      canvasObj.lockMovementY = false;
+      canvasObj.lockScalingX = false;
+      canvasObj.lockScalingY = false;
+    }
+    return this.canvas.renderAll();
+  };
+
+  BaseTool.prototype.lockDrag = function() {
+    var canvasObj, j, len, ref;
+    this.canvas.selection = false;
+    ref = this.canvas._objects;
+    for (j = 0, len = ref.length; j < len; j++) {
+      canvasObj = ref[j];
+      canvasObj.lockMovementX = true;
+      canvasObj.lockMovementY = true;
+      canvasObj.lockScalingX = true;
+      canvasObj.lockScalingY = true;
+    }
+    return this.canvas.renderAll();
+  };
+
   return BaseTool;
 
 })();
 
-window.PaintMasterPlugin.tools.AddCircle = AddCircle = (function(superClass) {
-  extend(AddCircle, superClass);
-
-  function AddCircle(paintMaster) {
-    this.paintMaster = paintMaster;
-    this.onClick = bind(this.onClick, this);
-    this.name = 'Круг';
-    this.id = 'add-circle';
-    AddCircle.__super__.constructor.call(this, this.paintMaster);
-  }
-
-  AddCircle.prototype.onClick = function() {
-    var circle;
-    circle = new fabric.Circle({
-      top: 100,
-      left: 100,
-      radius: 100,
-      stroke: this.currentColor(),
-      fill: '',
-      strokeWidth: this.currentWidth()
-    });
-    this.paintMaster.fCanvas.add(circle);
-    this.canvas.deactivateAll().renderAll();
-    return this.canvas.setActiveObject(this.canvas._objects[this.canvas._objects.length - 1]);
-  };
-
-  return AddCircle;
-
-})(window.PaintMasterPlugin.tools.BaseTool);
-
-window.PaintMasterPlugin.tools.AddSquare = AddSquare = (function(superClass) {
-  extend(AddSquare, superClass);
-
-  function AddSquare(paintMaster) {
-    this.paintMaster = paintMaster;
-    this.onClick = bind(this.onClick, this);
-    this.name = 'Прямоугольник';
-    this.id = 'add-square';
-    this.active = false;
-    this.canvas = this.paintMaster.fCanvas;
-    AddSquare.__super__.constructor.call(this, this.paintMaster);
-  }
-
-  AddSquare.prototype.mousedown = function(e) {
-    var mouse;
-    this.canvas = this.paintMaster.fCanvas;
-    mouse = this.canvas.getPointer();
-    this.x = mouse.x;
-    this.y = mouse.y;
-  };
-
-  AddSquare.prototype.mousemove = function(e) {};
-
-  AddSquare.prototype.mouseup = function(e) {
-    var currentX, currentY, height, mouse, square, width;
-    if (this.canvas.getActiveObject()) {
-      return;
-    }
-    mouse = this.canvas.getPointer();
-    currentX = mouse.x;
-    currentY = mouse.y;
-    height = Math.abs(this.y - currentY);
-    width = Math.abs(this.x - currentX);
-    if (this.x > currentX) {
-      this.x = currentX;
-    }
-    if (this.y > currentY) {
-      this.y = currentY;
-    }
-    square = new fabric.Rect({
-      width: width,
-      height: height,
-      left: this.x,
-      top: this.y,
-      fill: '',
-      stroke: this.currentColor(),
-      strokeWidth: this.currentWidth()
-    });
-    this.paintMaster.fCanvas.add(square);
-    this.canvas.deactivateAll().renderAll();
-    if (width > 0 || height > 0) {
-      this.canvas.setActiveObject(this.canvas._objects[this.canvas._objects.length - 1]);
-    }
-  };
-
-  AddSquare.prototype.onClick = function() {};
-
-  return AddSquare;
-
-})(window.PaintMasterPlugin.tools.BaseTool);
-
 window.PaintMasterPlugin.tools.AddText = AddText = (function(superClass) {
   extend(AddText, superClass);
 
-  function AddText(paintMaster) {
-    this.paintMaster = paintMaster;
+  function AddText(paintMaster1) {
+    this.paintMaster = paintMaster1;
     this.activate = bind(this.activate, this);
     this.name = 'Текст';
-    this.help = '123 Нажмите на появившееся поле чтобы редактировать текст';
+    this.help = 'Нажмите на появившееся поле чтобы редактировать текст';
     this.id = 'add-text';
     AddText.__super__.constructor.call(this, this.paintMaster);
   }
 
   AddText.prototype.activate = function() {
-    this.iText = new fabric.IText("Tap and type", {
+    this.iText = new fabric.IText("Текст", {
       fontFamily: 'arial black',
       left: 100,
       top: 100,
@@ -435,56 +391,251 @@ window.PaintMasterPlugin.tools.AddText = AddText = (function(superClass) {
 
 })(window.PaintMasterPlugin.tools.BaseTool);
 
+window.PaintMasterPlugin.tools.ChooseColor = ChooseColor = (function(superClass) {
+  extend(ChooseColor, superClass);
+
+  function ChooseColor(paintMaster1) {
+    this.paintMaster = paintMaster1;
+    this.onChange = bind(this.onChange, this);
+    this.deactivate = bind(this.deactivate, this);
+    this.activate = bind(this.activate, this);
+    this.name = 'Выбрать цвет';
+    this.id = 'choose-color';
+    ChooseColor.__super__.constructor.call(this, this.paintMaster);
+    this.html = "<div class='pm-tool " + this.id + "' data-pm-tool-id='" + this.id + "'> </div>";
+    this.colors = ['#000000', '#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#00FFFF', '#FF00FF', '#C0C0C0', '#FFFFFF'];
+  }
+
+  ChooseColor.prototype.activate = function(e) {
+    var paintMaster, self;
+    ChooseColor.__super__.activate.call(this);
+    this.displayPanel();
+    paintMaster = this.paintMaster;
+    self = this;
+    return $(this.paintMaster.toolboxEl.parent()).on('click', '.pm-choose-color-item', function(e) {
+      paintMaster.selectedColor = $(this).data('color');
+      paintMaster.fCanvas.freeDrawingBrush.color = $(this).data('color');
+      paintMaster.toolboxEl.find('.pm-tool.select-color').css('color', $(this).data('color'));
+      return self.deactivate();
+    });
+  };
+
+  ChooseColor.prototype.deactivate = function(e) {
+    ChooseColor.__super__.deactivate.call(this);
+    return this.hidePanel();
+  };
+
+  ChooseColor.prototype.onChange = function(e) {
+    this.paintMaster.selectedColor = e.currentTarget.value;
+    this.paintMaster.fCanvas.freeDrawingBrush.color = e.currentTarget.value;
+    return this.paintMaster.wrapperEl.find('.pm-tool.select-color').css('color', e.currentTarget.value);
+  };
+
+  ChooseColor.prototype.onSettingsChange = function(settingName, oladVal, newVal) {};
+
+  ChooseColor.prototype.displayPanel = function() {
+    var color, html, toolboxWrapper;
+    if ($('.pm-block.pm-choose-color').length) {
+      return $('.pm-block.pm-choose-color').removeClass('hidden');
+    }
+    html = "<div class='pm-block pm-choose-color'> " + (((function() {
+      var j, len, ref, results;
+      ref = this.colors;
+      results = [];
+      for (j = 0, len = ref.length; j < len; j++) {
+        color = ref[j];
+        results.push(this.renderColorItem(color));
+      }
+      return results;
+    }).call(this)).join('')) + " </div>";
+    toolboxWrapper = this.paintMaster.toolboxEl.parent();
+    return toolboxWrapper.append(html);
+  };
+
+  ChooseColor.prototype.renderColorItem = function(color) {
+    return "<div class='pm-choose-color-item' style='background-color: " + color + "' data-color='" + color + "'> </div>";
+  };
+
+  ChooseColor.prototype.hidePanel = function() {
+    return $('.pm-block.pm-choose-color').addClass('hidden');
+  };
+
+  ChooseColor.prototype.setSettingsCallbacks = function() {
+    var j, len, ref, results, settingItem;
+    ref = this.getSettingsItems();
+    results = [];
+    for (j = 0, len = ref.length; j < len; j++) {
+      settingItem = ref[j];
+      results.push(settingItem.setCallbacks());
+    }
+    return results;
+  };
+
+  ChooseColor.prototype.setSettingsEventListeners = function() {
+    var j, len, ref, results, settingItem;
+    ref = this.getSettingsItems();
+    results = [];
+    for (j = 0, len = ref.length; j < len; j++) {
+      settingItem = ref[j];
+      results.push(settingItem.setEventsListeners());
+    }
+    return results;
+  };
+
+  ChooseColor.prototype.getSettingsItems = function() {
+    var brushSizeItem, canvasHeightItem, canvasWidthItem, defaultSettingsItems, fontSizeItem;
+    if (defaultSettingsItems) {
+      return defaultSettingsItems;
+    }
+    defaultSettingsItems = [];
+    fontSizeItem = new PaintMasterPlugin.SettingsItem(this.paintMaster, {
+      label: 'Размер шрифта',
+      cssClass: 'pm-font-size-value',
+      pmAttr: 'fontSize',
+      htmlInput: "<input type='range' min='1' max='100' class='pm-font-size' value='" + (parseInt(this.paintMaster.settings.fontSize)) + "'>",
+      callbacks: [
+        (function(paintMaster) {
+          return $(paintMaster.containerEl).on('input', '.pm-font-size', (function(e) {
+            return this.settings.fontSize = e.currentTarget.valueAsNumber;
+          }).bind(paintMaster));
+        })
+      ]
+    });
+    brushSizeItem = new PaintMasterPlugin.SettingsItem(this.paintMaster, {
+      label: 'Размер кисти',
+      cssClass: 'pm-brush-size-value',
+      pmAttr: 'brushSize',
+      htmlInput: "<input type='range' min='1' max='100' class='pm-brush-size' value='" + (parseInt(this.paintMaster.settings.brushSize)) + "'>",
+      callbacks: [
+        (function(paintMaster) {
+          return $(paintMaster.containerEl).on('input', '.pm-brush-size', (function(e) {
+            return this.settings.brushSize = e.currentTarget.valueAsNumber;
+          }).bind(paintMaster));
+        })
+      ]
+    });
+    canvasWidthItem = new PaintMasterPlugin.SettingsItem(this.paintMaster, {
+      label: 'Ширина холста',
+      cssClass: 'pm-canvas-width-value',
+      pmAttr: 'canvasWidth',
+      htmlInput: "<input type='range' min='32' max='4096' class='pm-canvas-width' value='" + (parseInt(this.paintMaster.settings.canvasWidth)) + "'>",
+      callbacks: [
+        (function(paintMaster) {
+          return $(paintMaster.containerEl).on('input', '.pm-canvas-width', (function(e) {
+            return this.settings.canvasWidth = e.currentTarget.valueAsNumber;
+          }).bind(paintMaster));
+        })
+      ]
+    });
+    canvasHeightItem = new PaintMasterPlugin.SettingsItem(this.paintMaster, {
+      label: 'Высота холста',
+      cssClass: 'pm-canvas-height-value',
+      pmAttr: 'canvasHeight',
+      htmlInput: "<input type='range' min='32' max='4096' class='pm-canvas-height' value='" + (parseInt(this.paintMaster.settings.canvasHeight)) + "'>",
+      callbacks: [
+        (function(paintMaster) {
+          return $(paintMaster.containerEl).on('input', '.pm-canvas-height', (function(e) {
+            return this.settings.canvasHeight = e.currentTarget.valueAsNumber;
+          }).bind(paintMaster));
+        })
+      ]
+    });
+    defaultSettingsItems.push(fontSizeItem, brushSizeItem, canvasWidthItem, canvasHeightItem);
+    return defaultSettingsItems;
+  };
+
+  return ChooseColor;
+
+})(window.PaintMasterPlugin.tools.BaseTool);
+
 window.PaintMasterPlugin.tools.ClipboardImagePaste = ClipboardImagePaste = (function(superClass) {
   extend(ClipboardImagePaste, superClass);
 
-  function ClipboardImagePaste(paintMaster) {
-    this.paintMaster = paintMaster;
+  function ClipboardImagePaste(paintMaster1) {
+    this.paintMaster = paintMaster1;
+    this.onPasteEvent = bind(this.onPasteEvent, this);
     this.name = 'Вставить картинку из буфера';
-    this.help = 'Чтобы вставить картинку из буфера, нажмите CTRL-V';
+    this.help = 'Чтобы вставить картинку из буфера, нажмите <b>CTRL-V</b> </br> <b>Внимание!</b> Размеры холста будут изменены в соответствии с размерами вставленного изображения';
     this.id = 'clipboard-image-paste';
     ClipboardImagePaste.__super__.constructor.call(this, this.paintMaster);
+    this.clickEventListener = function(e) {
+      return $('#pm-image-paste-field').focus();
+    };
   }
 
   ClipboardImagePaste.prototype.activate = function() {
-    this.setImagePasteListener();
+    var html;
+    this.x = window.scrollX;
+    this.y = window.scrollY;
+    window.myPaste = this.onPasteEvent;
+    html = "<div id='pm-image-paste-field' contenteditable='true' onpaste='window.myPaste(this, event)' style='width: 1px; height: 1px; overflow: hidden;' ></div>";
+    this.pasteElem = $(html).appendTo(this.paintMaster.containerEl[1]);
+    this.pasteElem.focus();
+    window.addEventListener('click', this.clickEventListener, false);
     return ClipboardImagePaste.__super__.activate.call(this);
   };
 
-  ClipboardImagePaste.prototype.setImagePasteListener = function() {
-    var pasteImage, self;
-    self = this;
-    pasteImage = function(event) {
-      var cbData, cbDataItem, i, imageData, imageURL, type;
-      cbData = event.clipboardData;
-      i = 0;
-      while (i < cbData.items.length) {
-        cbDataItem = cbData.items[i];
-        type = cbDataItem.type;
-        if (type.indexOf('image') !== -1) {
-          imageData = cbDataItem.getAsFile();
-          imageURL = window.webkitURL.createObjectURL(imageData);
-          self.onImagePaste(imageURL);
-        }
-        i++;
+  ClipboardImagePaste.prototype.deactivate = function() {
+    ClipboardImagePaste.__super__.deactivate.call(this);
+    if (this.pasteElem) {
+      this.pasteElem.remove();
+    }
+    return window.removeEventListener('click', this.clickEventListener, false);
+  };
+
+  ClipboardImagePaste.prototype.onPasteEvent = function(elem, event) {
+    if (event.clipboardData && event.clipboardData.items) {
+      return this.extractImageFromClipboard(event);
+    } else {
+      return this.tryToExtractImageFromContainer();
+    }
+  };
+
+  ClipboardImagePaste.prototype.tryToExtractImageFromContainer = function() {
+    var pastedImage;
+    pastedImage = this.pasteElem.find('img');
+    if (pastedImage.length) {
+      return this.onImagePaste(pastedImage.attr('src'));
+    } else {
+      return setTimeout((function() {
+        return this.tryToExtractImageFromContainer();
+      }).bind(this), 100);
+    }
+  };
+
+  ClipboardImagePaste.prototype.extractImageFromClipboard = function(event) {
+    var cbData, cbDataItem, i, imageData, imageURL, type;
+    cbData = event.clipboardData;
+    i = 0;
+    while (i < cbData.items.length) {
+      cbDataItem = cbData.items[i];
+      type = cbDataItem.type;
+      if (type.indexOf('image') !== -1) {
+        imageData = cbDataItem.getAsFile();
+        imageURL = window.URL.createObjectURL(imageData);
+        this.onImagePaste(imageURL);
       }
-    };
-    return window.addEventListener("paste", pasteImage);
+      i++;
+    }
   };
 
   ClipboardImagePaste.prototype.onImagePaste = function(imageURL) {
-    var img;
+    var image;
     if (!this.active) {
       return;
     }
-    return img = new fabric.Image.fromURL(imageURL, (function(imgFromURL) {
-      return this.canvas.setBackgroundImage(imgFromURL, (function() {
-        this.canvas.setHeight(imgFromURL.height);
-        this.canvas.setWidth(imgFromURL.width);
-        this.canvas.renderAll();
-        return this.deactivate();
-      }).bind(this));
-    }).bind(this));
+    image = new Image();
+    image.crossOrigin = "anonymous";
+    image.src = imageURL;
+    return image.onload = (function() {
+      var imgInstance;
+      imgInstance = new fabric.Image(image, {});
+      this.paintMaster.settings.canvasHeight = imgInstance.height;
+      this.paintMaster.settings.canvasWidth = imgInstance.width;
+      this.canvas.setBackgroundImage(imgInstance);
+      this.canvas.renderAll();
+      return this.deactivate();
+    }).bind(this);
   };
 
   return ClipboardImagePaste;
@@ -494,10 +645,10 @@ window.PaintMasterPlugin.tools.ClipboardImagePaste = ClipboardImagePaste = (func
 window.PaintMasterPlugin.tools.Crop = Crop = (function(superClass) {
   extend(Crop, superClass);
 
-  function Crop(paintMaster) {
-    this.paintMaster = paintMaster;
+  function Crop(paintMaster1) {
+    this.paintMaster = paintMaster1;
     this.name = 'Обрезать картинку';
-    this.help = 'Выберите участок, который должен остаться </br> Enter - применить </br> Backspace - отмена';
+    this.help = 'Выберите участок, который должен остаться </br> <b>Enter</b> - применить </br> <b>Backspace</b> - отмена';
     this.id = 'crop';
     this.canvas = this.paintMaster.fCanvas;
     this.shadeFill = '5E5E5E';
@@ -538,7 +689,7 @@ window.PaintMasterPlugin.tools.Crop = Crop = (function(superClass) {
 
   Crop.prototype.mousedown = function(e) {
     var mouse;
-    mouse = this.canvas.getPointer();
+    mouse = this.canvas.getPointer(e);
     this.x = mouse.x;
     return this.y = mouse.y;
   };
@@ -549,7 +700,7 @@ window.PaintMasterPlugin.tools.Crop = Crop = (function(superClass) {
 
   Crop.prototype.mouseup = function(e) {
     var mouse;
-    mouse = this.canvas.getPointer();
+    mouse = this.canvas.getPointer(e);
     return this.addRectToCanvas(this.x, this.y, mouse.x, mouse.y);
   };
 
@@ -651,8 +802,8 @@ window.PaintMasterPlugin.tools.Crop = Crop = (function(superClass) {
       crossOrigin: 'anonymous'
     });
     this.canvas.clear().renderAll();
-    this.canvas.setWidth(width * scaleX);
-    this.canvas.setHeight(height * scaleY);
+    this.paintMaster.settings.canvasWidth = width;
+    this.paintMaster.settings.canvasHeight = height;
     this.canvas.setBackgroundImage(img, (function() {
       return this.renderAll();
     }).bind(this.canvas));
@@ -668,18 +819,18 @@ window.PaintMasterPlugin.tools.Crop = Crop = (function(superClass) {
 
 })(window.PaintMasterPlugin.tools.BaseTool);
 
-window.PaintMasterPlugin.tools.DrawCircle = DrawCircle = (function(superClass) {
-  extend(DrawCircle, superClass);
+window.PaintMasterPlugin.tools.DrawEllipse = DrawEllipse = (function(superClass) {
+  extend(DrawEllipse, superClass);
 
-  function DrawCircle(paintMaster) {
-    this.paintMaster = paintMaster;
+  function DrawEllipse(paintMaster1) {
+    this.paintMaster = paintMaster1;
     this.onClick = bind(this.onClick, this);
     this.name = 'Окружность';
-    this.id = 'draw-circle';
-    DrawCircle.__super__.constructor.call(this, this.paintMaster);
+    this.id = 'draw-ellipse';
+    DrawEllipse.__super__.constructor.call(this, this.paintMaster);
   }
 
-  DrawCircle.prototype.onClick = function() {
+  DrawEllipse.prototype.onClick = function() {
     return;
     if (this.active === true) {
       return this.paintMaster.wrapperEl.find(".pm-tool." + this.id).addClass('active');
@@ -688,29 +839,68 @@ window.PaintMasterPlugin.tools.DrawCircle = DrawCircle = (function(superClass) {
     }
   };
 
-  DrawCircle.prototype.mousedown = function(e) {
-    var mouse;
+  DrawEllipse.prototype.mousedown = function(e) {
+    var circle, mouse;
+    this.drawing = true;
+    this.lockDrag();
     this.canvas = this.paintMaster.fCanvas;
-    mouse = this.canvas.getPointer();
+    mouse = this.canvas.getPointer(e.e);
+    this.y = mouse.y;
     this.x = mouse.x;
-    return this.y = mouse.y;
+    circle = new fabric.Ellipse({
+      rx: 1,
+      ry: 1,
+      left: this.x,
+      top: this.y,
+      fill: '',
+      stroke: this.currentColor(),
+      strokeWidth: this.currentWidth()
+    });
+    return this.canvas.add(circle).renderAll().setActiveObject(circle);
   };
 
-  DrawCircle.prototype.mousemove = function(e) {
-    return 1;
-  };
-
-  DrawCircle.prototype.mouseup = function(e) {
-    var mouse;
-    if (this.canvas.getActiveObject()) {
+  DrawEllipse.prototype.mousemove = function(e) {
+    var circle, currentX, currentY, rx, ry;
+    if (!this.drawing) {
       return;
     }
-    this.canvas = this.paintMaster.fCanvas;
-    mouse = this.canvas.getPointer();
-    return this.addCircleToCanvas(this.x, this.y, mouse.x, mouse.y);
+    currentX = this.canvas.getPointer(e.e).x;
+    currentY = this.canvas.getPointer(e.e).y;
+    circle = this.canvas.getActiveObject();
+    rx = Math.abs(currentX - this.x) / 2;
+    ry = Math.abs(currentY - this.y) / 2;
+    circle.set('rx', rx);
+    circle.set('ry', ry);
+    if (this.x > currentX) {
+      circle.set('left', currentX);
+    }
+    if (this.y > currentY) {
+      circle.set('top', currentY);
+    }
+    return this.canvas.renderAll();
   };
 
-  DrawCircle.prototype.addCircleToCanvas = function(startX, startY, currentX, currentY) {
+  DrawEllipse.prototype.mouseup = function(e) {
+    var aCircle, circle;
+    this.drawing = false;
+    aCircle = this.canvas.getActiveObject();
+    circle = new fabric.Ellipse({
+      rx: aCircle.rx,
+      ry: aCircle.ry,
+      left: aCircle.left,
+      top: aCircle.top,
+      fill: '',
+      stroke: this.currentColor(),
+      strokeWidth: this.currentWidth()
+    });
+    this.canvas.add(circle).renderAll();
+    this.canvas.remove(this.canvas.getActiveObject());
+    this.canvas.setActiveObject(circle);
+    this.unlockDrag();
+    return this.canvas.deactivateAll().renderAll();
+  };
+
+  DrawEllipse.prototype.addCircleToCanvas = function(startX, startY, currentX, currentY) {
     var circle, rx, ry;
     rx = Math.abs(currentX - startX) / 2;
     ry = Math.abs(currentY - startY) / 2;
@@ -736,15 +926,108 @@ window.PaintMasterPlugin.tools.DrawCircle = DrawCircle = (function(superClass) {
     }
   };
 
-  return DrawCircle;
+  return DrawEllipse;
+
+})(window.PaintMasterPlugin.tools.BaseTool);
+
+window.PaintMasterPlugin.tools.DrawRect = DrawRect = (function(superClass) {
+  extend(DrawRect, superClass);
+
+  function DrawRect(paintMaster1) {
+    this.paintMaster = paintMaster1;
+    this.onClick = bind(this.onClick, this);
+    this.name = 'Прямоугольник';
+    this.id = 'draw-rect';
+    this.active = false;
+    this.canvas = this.paintMaster.fCanvas;
+    DrawRect.__super__.constructor.call(this, this.paintMaster);
+  }
+
+  DrawRect.prototype.activate = function() {
+    DrawRect.__super__.activate.call(this);
+    return this.lockDrag();
+  };
+
+  DrawRect.prototype.deactivate = function() {
+    DrawRect.__super__.deactivate.call(this);
+    return this.unlockDrag();
+  };
+
+  DrawRect.prototype.mousedown = function(e) {
+    var mouse, square;
+    this.drawing = true;
+    this.lockDrag();
+    this.canvas.deactivateAll().renderAll();
+    this.canvas = this.paintMaster.fCanvas;
+    mouse = this.canvas.getPointer(e.e);
+    this.x = mouse.x;
+    this.y = mouse.y;
+    square = new fabric.Rect({
+      width: 10,
+      height: 10,
+      left: this.x,
+      top: this.y,
+      fill: '',
+      stroke: this.currentColor(),
+      strokeWidth: this.currentWidth()
+    });
+    return this.canvas.add(square).renderAll().setActiveObject(square);
+  };
+
+  DrawRect.prototype.mousemove = function(e) {
+    var currentX, currentY, height, mouse, square, width;
+    if (!this.drawing) {
+      return;
+    }
+    mouse = this.canvas.getPointer(e.e);
+    currentX = mouse.x;
+    currentY = mouse.y;
+    console.log(currentX, currentY);
+    height = Math.round(Math.abs(this.y - currentY));
+    width = Math.round(Math.abs(this.x - currentX));
+    square = this.canvas.getActiveObject();
+    square.set('width', width);
+    if (this.x > currentX) {
+      square.set('left', this.x - width);
+    }
+    square.set('height', height);
+    if (this.y > currentY) {
+      square.set('top', this.y - height);
+    }
+    return this.canvas.renderAll();
+  };
+
+  DrawRect.prototype.mouseup = function(e) {
+    var aSquare, square;
+    this.drawing = false;
+    aSquare = this.canvas.getActiveObject();
+    square = new fabric.Rect({
+      width: aSquare.width,
+      height: aSquare.height,
+      left: aSquare.left,
+      top: aSquare.top,
+      fill: '',
+      stroke: this.currentColor(),
+      strokeWidth: this.currentWidth()
+    });
+    this.canvas.add(square).renderAll();
+    this.canvas.remove(this.canvas.getActiveObject());
+    this.canvas.setActiveObject(square);
+    this.lockDrag();
+    return this.canvas.deactivateAll().renderAll();
+  };
+
+  DrawRect.prototype.onClick = function() {};
+
+  return DrawRect;
 
 })(window.PaintMasterPlugin.tools.BaseTool);
 
 window.PaintMasterPlugin.tools.DrawingModeSwitch = DrawingModeSwitch = (function(superClass) {
   extend(DrawingModeSwitch, superClass);
 
-  function DrawingModeSwitch(paintMaster) {
-    this.paintMaster = paintMaster;
+  function DrawingModeSwitch(paintMaster1) {
+    this.paintMaster = paintMaster1;
     this.onClick = bind(this.onClick, this);
     this.name = 'Карандаш';
     this.id = 'dr-mode-switch';
@@ -770,9 +1053,20 @@ window.PaintMasterPlugin.tools.DrawingModeSwitch = DrawingModeSwitch = (function
 })(window.PaintMasterPlugin.tools.BaseTool);
 
 window.PaintMasterPlugin.SettingsItem = SettingsItem = (function() {
-  function SettingsItem(paintMaster, params1) {
-    this.paintMaster = paintMaster;
+  function SettingsItem(paintMaster1, params1) {
+    this.paintMaster = paintMaster1;
     this.params = params1;
+    this.pmProperty = this.params.pmAttr;
+    this.callbacks = this.params.callbacks;
+    this.eventListeners = [
+      function(paintMaster, settingItemParams) {
+        return document.addEventListener('pmSettingsChange', (function(e) {
+          if (e.detail.property === this.pmProperty) {
+            return $("." + settingItemParams.cssClass).html(paintMaster.settings[e.detail.property]);
+          }
+        }).bind(this));
+      }
+    ];
     return;
   }
 
@@ -782,11 +1076,28 @@ window.PaintMasterPlugin.SettingsItem = SettingsItem = (function() {
 
   SettingsItem.prototype.setCallbacks = function() {
     var callback, j, len, ref, results;
-    ref = this.params.callbacks;
+    if (this.callbacks == null) {
+      return;
+    }
+    ref = this.callbacks;
     results = [];
     for (j = 0, len = ref.length; j < len; j++) {
       callback = ref[j];
-      results.push(callback.call(this.paintMaster));
+      results.push(callback.call(this, this.paintMaster));
+    }
+    return results;
+  };
+
+  SettingsItem.prototype.setEventsListeners = function() {
+    var eventListener, j, len, ref, results;
+    if (this.eventListeners == null) {
+      return;
+    }
+    ref = this.eventListeners;
+    results = [];
+    for (j = 0, len = ref.length; j < len; j++) {
+      eventListener = ref[j];
+      results.push(eventListener.call(this, this.paintMaster, this.params));
     }
     return results;
   };
@@ -798,8 +1109,8 @@ window.PaintMasterPlugin.SettingsItem = SettingsItem = (function() {
 window.PaintMasterPlugin.tools.OpenSettings = OpenSettings = (function(superClass) {
   extend(OpenSettings, superClass);
 
-  function OpenSettings(paintMaster) {
-    this.paintMaster = paintMaster;
+  function OpenSettings(paintMaster1) {
+    this.paintMaster = paintMaster1;
     this.onChange = bind(this.onChange, this);
     this.deactivate = bind(this.deactivate, this);
     this.activate = bind(this.activate, this);
@@ -812,7 +1123,8 @@ window.PaintMasterPlugin.tools.OpenSettings = OpenSettings = (function(superClas
   OpenSettings.prototype.activate = function(e) {
     OpenSettings.__super__.activate.call(this);
     this.displaySettingsPanel();
-    return this.setSettingsCallbacks();
+    this.setSettingsCallbacks();
+    return this.setSettingsEventListeners();
   };
 
   OpenSettings.prototype.deactivate = function(e) {
@@ -862,6 +1174,17 @@ window.PaintMasterPlugin.tools.OpenSettings = OpenSettings = (function(superClas
     return results;
   };
 
+  OpenSettings.prototype.setSettingsEventListeners = function() {
+    var j, len, ref, results, settingItem;
+    ref = this.getSettingsItems();
+    results = [];
+    for (j = 0, len = ref.length; j < len; j++) {
+      settingItem = ref[j];
+      results.push(settingItem.setEventsListeners());
+    }
+    return results;
+  };
+
   OpenSettings.prototype.getSettingsItems = function() {
     var brushSizeItem, canvasHeightItem, canvasWidthItem, defaultSettingsItems, fontSizeItem;
     if (defaultSettingsItems) {
@@ -869,66 +1192,54 @@ window.PaintMasterPlugin.tools.OpenSettings = OpenSettings = (function(superClas
     }
     defaultSettingsItems = [];
     fontSizeItem = new PaintMasterPlugin.SettingsItem(this.paintMaster, {
-      label: 'Font size',
+      label: 'Размер шрифта',
       cssClass: 'pm-font-size-value',
       pmAttr: 'fontSize',
       htmlInput: "<input type='range' min='1' max='100' class='pm-font-size' value='" + (parseInt(this.paintMaster.settings.fontSize)) + "'>",
       callbacks: [
-        (function() {
-          var self;
-          self = this;
-          return $(this.containerEl).on('input', '.pm-font-size', function(e) {
-            self.settings.fontSize = e.currentTarget.valueAsNumber + 'px';
-            return $('span.pm-font-size-value').html(self.settings.fontSize);
-          });
+        (function(paintMaster) {
+          return $(paintMaster.containerEl).on('input', '.pm-font-size', (function(e) {
+            return this.settings.fontSize = e.currentTarget.valueAsNumber;
+          }).bind(paintMaster));
         })
       ]
     });
     brushSizeItem = new PaintMasterPlugin.SettingsItem(this.paintMaster, {
-      label: 'Brush size',
+      label: 'Размер кисти',
       cssClass: 'pm-brush-size-value',
       pmAttr: 'brushSize',
       htmlInput: "<input type='range' min='1' max='100' class='pm-brush-size' value='" + (parseInt(this.paintMaster.settings.brushSize)) + "'>",
       callbacks: [
-        (function() {
-          var self;
-          self = this;
-          return $(this.containerEl).on('input', '.pm-brush-size', function(e) {
-            self.settings.brushSize = e.currentTarget.valueAsNumber + 'px';
-            return $('span.pm-brush-size-value').html(self.settings.brushSize);
-          });
+        (function(paintMaster) {
+          return $(paintMaster.containerEl).on('input', '.pm-brush-size', (function(e) {
+            return this.settings.brushSize = e.currentTarget.valueAsNumber;
+          }).bind(paintMaster));
         })
       ]
     });
     canvasWidthItem = new PaintMasterPlugin.SettingsItem(this.paintMaster, {
-      label: 'Canvas width',
+      label: 'Ширина холста',
       cssClass: 'pm-canvas-width-value',
       pmAttr: 'canvasWidth',
-      htmlInput: "<input type='range' min='1' max='1000' class='pm-canvas-width' value='" + (parseInt(this.paintMaster.settings.canvasWidth)) + "'>",
+      htmlInput: "<input type='range' min='32' max='4096' class='pm-canvas-width' value='" + (parseInt(this.paintMaster.settings.canvasWidth)) + "'>",
       callbacks: [
-        (function() {
-          var self;
-          self = this;
-          return $(this.containerEl).on('input', '.pm-canvas-width', function(e) {
-            self.settings.canvasWidth = e.currentTarget.valueAsNumber + 'px';
-            return $('span.pm-canvas-width-value').html(self.settings.canvasWidth);
-          });
+        (function(paintMaster) {
+          return $(paintMaster.containerEl).on('input', '.pm-canvas-width', (function(e) {
+            return this.settings.canvasWidth = e.currentTarget.valueAsNumber;
+          }).bind(paintMaster));
         })
       ]
     });
     canvasHeightItem = new PaintMasterPlugin.SettingsItem(this.paintMaster, {
-      label: 'Canvas height',
+      label: 'Высота холста',
       cssClass: 'pm-canvas-height-value',
-      pmAttr: 'canvasWidth',
-      htmlInput: "<input type='range' min='1' max='1000' class='pm-canvas-height' value='" + (parseInt(this.paintMaster.settings.canvasHeight)) + "'>",
+      pmAttr: 'canvasHeight',
+      htmlInput: "<input type='range' min='32' max='4096' class='pm-canvas-height' value='" + (parseInt(this.paintMaster.settings.canvasHeight)) + "'>",
       callbacks: [
-        (function() {
-          var self;
-          self = this;
-          return $(this.containerEl).on('input', '.pm-canvas-height', function(e) {
-            self.settings.canvasHeight = e.currentTarget.valueAsNumber + 'px';
-            return $('span.pm-canvas-height-value').html(self.settings.canvasHeight);
-          });
+        (function(paintMaster) {
+          return $(paintMaster.containerEl).on('input', '.pm-canvas-height', (function(e) {
+            return this.settings.canvasHeight = e.currentTarget.valueAsNumber;
+          }).bind(paintMaster));
         })
       ]
     });
@@ -943,8 +1254,8 @@ window.PaintMasterPlugin.tools.OpenSettings = OpenSettings = (function(superClas
 window.PaintMasterPlugin.tools.SelectColor = SelectColor = (function(superClass) {
   extend(SelectColor, superClass);
 
-  function SelectColor(paintMaster) {
-    this.paintMaster = paintMaster;
+  function SelectColor(paintMaster1) {
+    this.paintMaster = paintMaster1;
     this.onChange = bind(this.onChange, this);
     this.name = 'Выбор цвета';
     this.id = 'select-color';
@@ -985,9 +1296,9 @@ $(document).ready(function() {
   painter.addToolboxItem(PaintMasterPlugin.tools.ClipboardImagePaste);
   painter.addToolboxItem(PaintMasterPlugin.tools.DrawingModeSwitch);
   painter.addToolboxItem(PaintMasterPlugin.tools.Crop);
-  painter.addToolboxItem(PaintMasterPlugin.tools.AddSquare);
-  painter.addToolboxItem(PaintMasterPlugin.tools.DrawCircle);
+  painter.addToolboxItem(PaintMasterPlugin.tools.DrawRect);
+  painter.addToolboxItem(PaintMasterPlugin.tools.DrawEllipse);
   painter.addToolboxItem(PaintMasterPlugin.tools.AddText);
-  painter.addToolboxItem(PaintMasterPlugin.tools.SelectColor);
-  return painter.addToolboxItem(PaintMasterPlugin.tools.OpenSettings);
+  painter.addToolboxItem(PaintMasterPlugin.tools.OpenSettings);
+  return painter.addToolboxItem(PaintMasterPlugin.tools.ChooseColor);
 });

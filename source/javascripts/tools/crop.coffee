@@ -1,7 +1,7 @@
 window.PaintMasterPlugin.tools.Crop = class Crop extends window.PaintMasterPlugin.tools.BaseTool
   constructor: (@paintMaster) ->
     @name = 'Обрезать картинку'
-    @help = 'Выберите участок, который должен остаться </br> Enter - применить </br> Backspace - отмена'
+    @help = 'Выберите участок, который должен остаться </br> <b>Enter</b> - применить </br> <b>Backspace</b> - отмена'
     @id = 'crop'
     @canvas = @paintMaster.fCanvas
     @shadeFill = '5E5E5E'
@@ -36,7 +36,7 @@ window.PaintMasterPlugin.tools.Crop = class Crop extends window.PaintMasterPlugi
     @canvas.remove @bottomBlindZone
 
   mousedown: (e) ->
-    mouse = @canvas.getPointer()
+    mouse = @canvas.getPointer(e)
     @x = mouse.x
     @y = mouse.y
 
@@ -44,7 +44,7 @@ window.PaintMasterPlugin.tools.Crop = class Crop extends window.PaintMasterPlugi
     @moveBlindZones()
 
   mouseup: (e) ->
-    mouse = @canvas.getPointer()
+    mouse = @canvas.getPointer(e)
     @addRectToCanvas(@x, @y, mouse.x, mouse.y)
 
   addRectToCanvas: (startX, startY, currentX, currentY) ->
@@ -144,8 +144,8 @@ window.PaintMasterPlugin.tools.Crop = class Crop extends window.PaintMasterPlugi
 
     @canvas.clear().renderAll()
 
-    @canvas.setWidth width * scaleX
-    @canvas.setHeight height * scaleY
+    @paintMaster.settings.canvasWidth = width
+    @paintMaster.settings.canvasHeight = height
 
     @canvas.setBackgroundImage img, (->
       @renderAll()

@@ -2,27 +2,104 @@ canvas
   border: 1px solid black
 
 .pm-toolbox-wrapper
-  border-radius: 5px
   position: relative
-  margin-bottom: 5px
   min-width: 25em
-  border: 1px solid rgba(100,100,100,0.35)
-  background-color: rgba(100,100,100,0.60)
-  background-color: #ffffff
-  background: #eeeeee
-  background: -moz-linear-gradient(top,  #eeeeee 0%, #cccccc 100%)
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#eeeeee), color-stop(100%,#cccccc))
-  background: -webkit-linear-gradient(top,  #eeeeee 0%,#cccccc 100%)
-  background: -o-linear-gradient(top,  #eeeeee 0%,#cccccc 100%)
-  background: -ms-linear-gradient(top,  #eeeeee 0%,#cccccc 100%)
-  background: linear-gradient(to bottom,  #eeeeee 0%,#cccccc 100%)
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#cccccc',GradientType=0 )
   z-index: 1000
+  border: 1px solid #eee
+  overflow: hidden
+
+.pm-canvas-overlay
+  position: absolute
+  top: 50px
+  left: 1px
+  right: 1px
+  margin: 0 auto
+  text-align: center
+  background-color: rgba(255, 255, 255, 0.9)
+  overflow: hidden
+  font-weight: bold
+  div
+    padding: 5px 0px
+  div.important
+    font-size: 2em
+    span
+      padding: 5px
+      border: 1px solid #dcdcdc
+      background-color: #EEE
+      background: linear-gradient(to top, #f5f5f5, #f2f2f2)
+      box-shadow: 0px 3px 0px 0 #cbcbcb
+      border-radius: 5px
+      width: 55px
+      height: 55px
+      display: inline-block
+      line-height: 55px
+
+.pm-canvas-overlay__title
+  margin: 0 auto
+  display: inline
+
+.pm-palette
+  float: left
+  width: 270px
+  align-items: center
+
+.pm-palette__item
+  float: left
+  width: 23px
+  height: 23px
+  border-radius: 6px
+  margin: 10px 2px
+  div
+    border-radius: 6px
+    margin-top: 5px
+    margin-left: 5px
+    width: 15px
+    height: 15px
+    transition: width 0.3s, height 0.3s, margin 0.3s, border-radius 0.3s ease-in-out
+
+.pm-palette__item-active 
+  div
+    border-radius: 12px
+    margin-top: 0px
+    margin-left: 0px
+    width: 23px
+    height: 23px
+
+.pm-aux
+  float: left
+  width: 300px
+
+.pm-aux__control
+  display: none
+
+.pm-aux__control-brush-size, .pm-aux__control-font-size
+  padding-top: 14px
+  font-size: 0.9em
+  label, input
+    display: inline-block
+    vertical-align: middle
+  label
+    span
+      width: 20px
+      display: inline-block
+
+.pm-aux__control-canvas-width, .pm-aux__control-canvas-height
+  width: 50%
+  padding-top: 12px
+  float: left
+  font-size: 0.8em
+  label, input
+    display: inline-block
+    vertical-align: middle
+  input
+    width: 40px
 
 .pm-toolbox
+  float: left
   display: flex
   flex-direction: row
   justify-content: flex-start
+  width: 300px
 
   .pm-tool
     height: auto
@@ -139,5 +216,8 @@ canvas
       margin: 0px 3px
       border-radius: 16px
       box-shadow: 0px 0px 5px #111
+
+.pm-main-container-top
+  flex-direction: column
 
 

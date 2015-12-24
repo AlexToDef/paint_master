@@ -5,12 +5,25 @@ window.PaintMasterPlugin.tools.AddText = class AddText extends window.PaintMaste
     @id = 'add-text'
     super(@paintMaster)
 
-  activate: =>
-    @iText = new fabric.IText "Текст",
-      fontFamily: 'arial black',
-      left: 100, 
-      top: 100,
-      fill: @currentColor()
-      fontSize: parseInt(@paintMaster.settings.fontSize)
-    @fCanvas.add(@iText)
+  activate: ->
     super()
+    @displayPalette()
+    @setAuxDisplay '.pm-aux__control-font-size', 'block'
+
+  deactivate: ->
+    super()
+    @setAuxDisplay '.pm-aux__control-font-size', 'none'
+
+  mousedown: (e) =>
+    mouse = @canvas.getPointer(e.e)
+    if @active
+      @iText = new fabric.IText "Текст",
+        fontFamily: 'arial black',
+        left: mouse.x, 
+        top: mouse.y,
+        fill: @paintMaster.settings.color
+        fontSize: parseInt(@paintMaster.settings.fontSize)
+      @fCanvas.add(@iText)
+      @canvas.renderAll().setActiveObject(@iText)
+      super()
+    @deactivate()

@@ -18,7 +18,37 @@ window.PaintMasterPlugin.tools.ClipboardImagePaste = class ClipboardImagePaste e
         onpaste='window.myPaste(this, event)'
         style='width: 1px; height: 1px; overflow: hidden;'
       ></div>"
+    pasteButtons = if navigator.platform.match(/Mac/).length > 0
+      "<span>&#8984;</span>&nbsp;&#8212;&nbsp;<span>V</span>"
+    else
+      "<span>Ctrl</span>&nbsp;&#8212;&nbsp;<span>V</span>"
+    if @paintMaster.settings.canvasWidth > 400
+      helpHtml = "
+        <div class='pm-canvas-overlay'>
+          <div class='pm-canvas-overlay__title'>
+            <div> Нажмите  
+            <div class='important'>#{pasteButtons}</div>
+            <div> чтобы вставить картинку </div>
+            <div> из буфера </div>
+          </div>
+        </div>
+      "
+    else if @paintMaster.settings.canvasWidth > 300
+      helpHtml = "<div class='pm-canvas-overlay'>
+          <div class='pm-canvas-overlay__title'>
+            <div class='important'>#{pasteButtons}</div>
+          </div>
+        </div>"
+    else
+      helpHtml = "<div class='pm-canvas-overlay'>
+          <div class='pm-canvas-overlay__title'>
+            Ctrl&nbsp;&#8212;&nbsp;V
+            </br>
+            &#8984;&nbsp;&#8212;&nbsp;V
+          </div>
+        </div>"
     @pasteElem = $(html).appendTo(@paintMaster.containerEl[1])
+    @helpElem = $(helpHtml).appendTo($(@paintMaster.containerEl[1]))
     @pasteElem.focus()
     window.addEventListener 'click', @clickEventListener, false
     super()
@@ -26,6 +56,7 @@ window.PaintMasterPlugin.tools.ClipboardImagePaste = class ClipboardImagePaste e
   deactivate: ->
     super()
     @pasteElem.remove() if @pasteElem
+    @helpElem.remove() if @helpElem
     window.removeEventListener 'click', @clickEventListener, false
 
   onPasteEvent: (elem, event) =>
@@ -63,9 +94,7 @@ window.PaintMasterPlugin.tools.ClipboardImagePaste = class ClipboardImagePaste e
     image.src = imageURL
     image.onload = (->
       imgInstance = new fabric.Image(image, {} )
-      @paintMaster.settings.canvasHeight = imgInstance.height
-      @paintMaster.settings.canvasWidth = imgInstance.width
-      @canvas.setBackgroundImage(imgInstance)
+      @canvas.add(imgInstance)
       @canvas.renderAll()
       @deactivate()
     ).bind @

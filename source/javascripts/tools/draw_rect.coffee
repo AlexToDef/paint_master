@@ -9,10 +9,14 @@ window.PaintMasterPlugin.tools.DrawRect = class DrawRect extends window.PaintMas
   activate: ->
     super()
     @lockDrag()
+    @displayPalette()
+    @setAuxDisplay '.pm-aux__control-brush-size', 'block'
 
   deactivate: ->
     super()
     @unlockDrag()
+    @hidePalette()
+    @setAuxDisplay '.pm-aux__control-brush-size', 'none'
 
   mousedown: (e) ->
     @drawing = true
@@ -29,8 +33,8 @@ window.PaintMasterPlugin.tools.DrawRect = class DrawRect extends window.PaintMas
       left: @x
       top: @y
       fill: ''
-      stroke: @currentColor()
-      strokeWidth: @currentWidth()
+      stroke: @paintMaster.settings.color
+      strokeWidth: @paintMaster.settings.brushSize
 
     @canvas.add(square).renderAll().setActiveObject(square)
 
@@ -62,13 +66,17 @@ window.PaintMasterPlugin.tools.DrawRect = class DrawRect extends window.PaintMas
       left: aSquare.left
       top: aSquare.top
       fill: ''
-      stroke: @currentColor()
-      strokeWidth: @currentWidth()
+      stroke: @paintMaster.settings.color
+      strokeWidth: @paintMaster.settings.brushSize
 
 
     @canvas.add(square).renderAll()
     @canvas.remove @canvas.getActiveObject()
     @canvas.setActiveObject(square)
+
+    if aSquare.width == 10 and aSquare.height == 10
+      @canvas.remove @canvas.getActiveObject()
+      return
 
     @lockDrag()
     @canvas.deactivateAll().renderAll()

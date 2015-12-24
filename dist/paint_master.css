@@ -2,19 +2,100 @@ canvas {
   border: 1px solid black; }
 
 .pm-toolbox-wrapper {
-  border-radius: 5px;
   position: relative;
-  margin-bottom: 5px;
   min-width: 25em;
-  border: 1px solid rgba(100, 100, 100, 0.35);
-  background-color: rgba(100, 100, 100, 0.6);
-  background-color: #ffffff;
-  background: #eeeeee;
-  background: linear-gradient(to bottom, #eeeeee 0%, #cccccc 100%);
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#cccccc',GradientType=0 );
-  z-index: 1000; }
+  z-index: 1000;
+  border: 1px solid #eee;
+  overflow: hidden; }
+
+.pm-canvas-overlay {
+  position: absolute;
+  top: 50px;
+  left: 1px;
+  right: 1px;
+  margin: 0 auto;
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+  font-weight: bold; }
+  .pm-canvas-overlay div {
+    padding: 5px 0px; }
+  .pm-canvas-overlay div.important {
+    font-size: 2em; }
+    .pm-canvas-overlay div.important span {
+      padding: 5px;
+      border: 1px solid #dcdcdc;
+      background-color: #EEE;
+      background: linear-gradient(to top, #f5f5f5, #f2f2f2);
+      box-shadow: 0px 3px 0px 0 #cbcbcb;
+      border-radius: 5px;
+      width: 55px;
+      height: 55px;
+      display: inline-block;
+      line-height: 55px; }
+
+.pm-canvas-overlay__title {
+  margin: 0 auto;
+  display: inline; }
+
+.pm-palette {
+  float: left;
+  width: 270px;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center; }
+
+.pm-palette__item {
+  float: left;
+  width: 23px;
+  height: 23px;
+  border-radius: 6px;
+  margin: 10px 2px; }
+  .pm-palette__item div {
+    border-radius: 6px;
+    margin-top: 5px;
+    margin-left: 5px;
+    width: 15px;
+    height: 15px;
+    transition: width 0.3s, height 0.3s, margin 0.3s, border-radius 0.3s ease-in-out; }
+
+.pm-palette__item-active div {
+  border-radius: 12px;
+  margin-top: 0px;
+  margin-left: 0px;
+  width: 23px;
+  height: 23px; }
+
+.pm-aux {
+  float: left;
+  width: 300px; }
+
+.pm-aux__control {
+  display: none; }
+
+.pm-aux__control-brush-size, .pm-aux__control-font-size {
+  padding-top: 14px;
+  font-size: 0.9em; }
+  .pm-aux__control-brush-size label, .pm-aux__control-brush-size input, .pm-aux__control-font-size label, .pm-aux__control-font-size input {
+    display: inline-block;
+    vertical-align: middle; }
+  .pm-aux__control-brush-size label span, .pm-aux__control-font-size label span {
+    width: 20px;
+    display: inline-block; }
+
+.pm-aux__control-canvas-width, .pm-aux__control-canvas-height {
+  width: 50%;
+  padding-top: 12px;
+  float: left;
+  font-size: 0.8em; }
+  .pm-aux__control-canvas-width label, .pm-aux__control-canvas-width input, .pm-aux__control-canvas-height label, .pm-aux__control-canvas-height input {
+    display: inline-block;
+    vertical-align: middle; }
+  .pm-aux__control-canvas-width input, .pm-aux__control-canvas-height input {
+    width: 40px; }
 
 .pm-toolbox {
+  float: left;
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
@@ -23,7 +104,8 @@ canvas {
   flex-direction: row;
   -webkit-justify-content: flex-start;
   -ms-flex-pack: start;
-  justify-content: flex-start; }
+  justify-content: flex-start;
+  width: 300px; }
   .pm-toolbox .pm-tool {
     height: auto;
     padding: 5px;
@@ -148,6 +230,11 @@ canvas {
     margin: 0px 3px;
     border-radius: 16px;
     box-shadow: 0px 0px 5px #111; }
+
+.pm-main-container-top {
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column; }
 
 @font-face {
   font-family: "Flaticon";

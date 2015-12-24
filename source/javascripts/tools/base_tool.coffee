@@ -69,12 +69,14 @@ window.PaintMasterPlugin.tools.BaseTool = class BaseTool
     return
 
   displayHelp: ->
+    return
     @paintMaster.currentToolNameEl.html("#{@name}</br>")
     @paintMaster.currentToolNameEl.after("<span>#{@help}</span>")
     @paintMaster.currentToolEl.removeClass 'hidden'
     @paintMaster.currentToolEl.find('.icon').addClass(@id)
 
   hideHelp: ->
+    return
     @paintMaster.currentToolNameEl.html('')
     @paintMaster.currentToolNameEl.nextAll().remove()
     @paintMaster.currentToolEl.addClass 'hidden'
@@ -97,4 +99,19 @@ window.PaintMasterPlugin.tools.BaseTool = class BaseTool
       canvasObj.lockScalingX = true
       canvasObj.lockScalingY = true
     @canvas.renderAll()
+
+  displayPalette: ->
+    $(@paintMaster.paletteEl).css('visibility', 'visible')
+
+  hidePalette: ->
+    $(@paintMaster.paletteEl).css('visibility', 'hidden')
+
+  displayBrushSize: ->
+    1
+
+  hideBrushSize: ->
+    1
+
+  setAuxDisplay: (selector, display) ->
+    $(selector).css 'display', display
 

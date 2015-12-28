@@ -3,6 +3,7 @@ window.PaintMasterPlugin.tools.ClipboardImagePaste = class ClipboardImagePaste e
     @name = 'Вставить картинку из буфера'
     @help = 'Чтобы вставить картинку из буфера, нажмите <b>CTRL-V</b> </br> <b>Внимание!</b> Размеры холста будут изменены в соответствии с размерами вставленного изображения'
     @id = 'clipboard-image-paste'
+    @resize = true
     super(@paintMaster)
     @clickEventListener = (e) ->
       $('#pm-image-paste-field').focus()
@@ -16,12 +17,12 @@ window.PaintMasterPlugin.tools.ClipboardImagePaste = class ClipboardImagePaste e
         id='pm-image-paste-field'
         contenteditable='true'
         onpaste='window.myPaste(this, event)'
-        style='width: 1px; height: 1px; overflow: hidden;'
+        style='width: 1px; height: 1px; overflow: hidden; outline: none;'
       ></div>"
-    pasteButtons = if navigator.platform.match(/Mac/).length > 0
-      "<span>&#8984;</span>&nbsp;&#8212;&nbsp;<span>V</span>"
+    pasteButtons = if navigator.platform.match(/Mac/) != null
+      "<span>&#8984;</span>&nbsp;+&nbsp;<span>V</span>"
     else
-      "<span>Ctrl</span>&nbsp;&#8212;&nbsp;<span>V</span>"
+      "<span>Ctrl</span>&nbsp;+&nbsp;<span>V</span>"
     if @paintMaster.settings.canvasWidth > 400
       helpHtml = "
         <div class='pm-canvas-overlay'>
@@ -97,4 +98,8 @@ window.PaintMasterPlugin.tools.ClipboardImagePaste = class ClipboardImagePaste e
       @canvas.add(imgInstance)
       @canvas.renderAll()
       @deactivate()
+      if @resize
+        @paintMaster.settings.canvasHeight = imgInstance.height
+        @paintMaster.settings.canvasWidth = imgInstance.width
+        @resize = false
     ).bind @

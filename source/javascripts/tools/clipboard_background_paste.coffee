@@ -18,7 +18,7 @@ window.PaintMasterPlugin.tools.ClipboardBackgroundPaste = class ClipboardBackgro
         onpaste='window.myPaste(this, event)'
         style='width: 1px; height: 1px; overflow: hidden;'
       ></div>"
-    pasteButtons = if navigator.platform.match(/Mac/).length > 0
+    pasteButtons = if true
       "<span>&#8984;</span>&nbsp;&#8212;&nbsp;<span>V</span>"
     else
       "<span>Ctrl</span>&nbsp;&#8212;&nbsp;<span>V</span>"

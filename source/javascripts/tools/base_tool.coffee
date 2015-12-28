@@ -101,10 +101,10 @@ window.PaintMasterPlugin.tools.BaseTool = class BaseTool
     @canvas.renderAll()
 
   displayPalette: ->
-    $(@paintMaster.paletteEl).css('visibility', 'visible')
+    $(@paintMaster.paletteEl).css('display', 'block')
 
   hidePalette: ->
-    $(@paintMaster.paletteEl).css('visibility', 'hidden')
+    $(@paintMaster.paletteEl).css('display', 'none')
 
   displayBrushSize: ->
     1

@@ -104,12 +104,19 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
             e.preventDefault()
             self.activeTool.onSubmit(e)
           if self.fCanvas.getActiveObject()
-            self.fCanvas.getActiveObject().selectable = false
-            self.fCanvas.deactivateAll().renderAll()
+            self.fCanvas.getActiveObject().lockMovementX = !self.fCanvas.getActiveObject().lockMovementX
+            self.fCanvas.getActiveObject().lockMovementY = !self.fCanvas.getActiveObject().lockMovementY 
+            self.fCanvas.getActiveObject().cornerColor = if self.fCanvas.getActiveObject().lockMovementX then 'rgba(150,0,0,0.5)' else 'rgba(102,153,255,0.5)'
+            self.fCanvas.getActiveObject().borderColor = if self.fCanvas.getActiveObject().lockMovementX then 'rgba(150,0,0,0.5)' else 'rgba(102,153,255,0.5)'
+            self.fCanvas.renderAll()
           if self.fCanvas.getActiveGroup()
             for activeGroupObject in self.fCanvas.getActiveGroup().objects
-              activeGroupObject.selectable = false
-            self.fCanvas.deactivateAll().renderAll()
+              # activeGroupObject.selectable = false
+              activeGroupObject.lockMovementX = true
+              activeGroupObject.lockMovementY = true
+              activeGroupObject.cornerColor = if activeGroupObject.lockMovementX then 'rgba(150,0,0,0.5)' else 'rgba(102,153,255,0.5)'
+              activeGroupObject.borderColor = if activeGroupObject.lockMovementX then 'rgba(150,0,0,0.5)' else 'rgba(102,153,255,0.5)'
+            self.fCanvas.renderAll()
         when 27
           self.fCanvas.deactivateAll().remove(activeGroupObject).renderAll()
           self.activeTool.deactivate() if self.activeTool
@@ -153,7 +160,6 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
       @setAttributeWatchers(@settings, name)
 
   settingChanged: (name, oldVal, newVal) ->
-    console.log arguments
     @activeTool.onSettingsChange() if @activeTool
     switch name
       when 'canvasWidth'
@@ -172,7 +178,6 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
       get: ->
         obj["_#{propName}"]
       set: (newVal) ->
-        # newVal = parseInt(newVal)
         oldVal = obj["_#{propName}"]
         obj["_#{propName}"] = newVal
         self.settingChanged(propName, oldVal, newVal)
@@ -227,6 +232,9 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
     @auxEl.prepend html
     $(@auxEl).on 'change', '.pm-aux__control-canvas-width input', (e) ->
       self.settings.canvasWidth = e.currentTarget.valueAsNumber
+    $(document).on 'pmSettingsChange', (e) ->
+      if e.originalEvent.detail.property == 'canvasWidth'
+        $('.pm-aux__control-canvas-width input').val(e.originalEvent.detail.newVal)
 
   drawCanvasHeightControl: ->
     self = @
@@ -238,6 +246,9 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
     @auxEl.prepend html
     $(@auxEl).on 'change', '.pm-aux__control-canvas-height input', (e) ->
       self.settings.canvasHeight = e.currentTarget.valueAsNumber
+    $(document).on 'pmSettingsChange', (e) ->
+      if e.originalEvent.detail.property == 'canvasHeight'
+        $('.pm-aux__control-canvas-height input').val(e.originalEvent.detail.newVal)
 
   renderColorItem: (color) ->
     return "<div class='pm-palette__item #{if @settings.color == color then 'pm-palette__item-active' else ''}'> <div style='background-color: #{color}' data-color='#{color}'> </div> </div>"

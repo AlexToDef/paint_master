@@ -36,7 +36,7 @@ window.PaintMasterPlugin.tools.DrawEllipse = class DrawEllipse extends window.Pa
       top: @y
       fill: ''
       stroke: @paintMaster.settings.color
-      strokeWidth: @paintMaster.settings.brushSize
+      strokeWidth: parseInt(@paintMaster.settings.brushSize)
 
     @canvas.add(circle).renderAll().setActiveObject(circle)
 
@@ -68,7 +68,7 @@ window.PaintMasterPlugin.tools.DrawEllipse = class DrawEllipse extends window.Pa
       top: aCircle.top
       fill: ''
       stroke: @paintMaster.settings.color
-      strokeWidth: @paintMaster.settings.brushSize
+      strokeWidth: parseInt(@paintMaster.settings.brushSize)
 
     @canvas.add(circle).renderAll()
     @canvas.remove @canvas.getActiveObject()

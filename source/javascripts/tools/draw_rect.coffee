@@ -34,7 +34,7 @@ window.PaintMasterPlugin.tools.DrawRect = class DrawRect extends window.PaintMas
       top: @y
       fill: ''
       stroke: @paintMaster.settings.color
-      strokeWidth: @paintMaster.settings.brushSize
+      strokeWidth: parseInt(@paintMaster.settings.brushSize)
 
     @canvas.add(square).renderAll().setActiveObject(square)
 
@@ -51,6 +51,7 @@ window.PaintMasterPlugin.tools.DrawRect = class DrawRect extends window.PaintMas
 
     square.set('width', width)
     square.set('left', @x - width) if @x > currentX
+    console.log "left: #{@x - width}"
     square.set('height', height)
     square.set('top', @y - height) if @y > currentY
       
@@ -67,8 +68,7 @@ window.PaintMasterPlugin.tools.DrawRect = class DrawRect extends window.PaintMas
       top: aSquare.top
       fill: ''
       stroke: @paintMaster.settings.color
-      strokeWidth: @paintMaster.settings.brushSize
-
+      strokeWidth: parseInt(@paintMaster.settings.brushSize)
 
     @canvas.add(square).renderAll()
     @canvas.remove @canvas.getActiveObject()

@@ -18,6 +18,7 @@ window.PaintMasterPlugin.tools.Crop = class Crop extends window.PaintMasterPlugi
       width: 100
       height: 100
       fill: ''
+      lockRotation: true
     )
     @canvas.add(@trueSight)
     ts = @trueSight

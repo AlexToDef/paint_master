@@ -1,4 +1,4 @@
-var AddText, BaseTool, ChooseColor, ClipboardBackgroundPaste, ClipboardImagePaste, Crop, DrawEllipse, DrawRect, DrawingModeSwitch, OpenSettings, PaintMaster, SelectColor, SettingsItem, WidthAndHeightSettings,
+var AddText, BaseTool, ChooseColor, ClipboardBackgroundPaste, ClipboardImagePaste, Crop, DrawArrow, DrawEllipse, DrawRect, DrawingModeSwitch, OpenSettings, PaintMaster, SelectColor, SettingsItem, WidthAndHeightSettings, strSVG,
   bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -125,16 +125,22 @@ window.PaintMasterPlugin.PaintMaster = PaintMaster = (function() {
             self.activeTool.onSubmit(e);
           }
           if (self.fCanvas.getActiveObject()) {
-            self.fCanvas.getActiveObject().selectable = false;
-            self.fCanvas.deactivateAll().renderAll();
+            self.fCanvas.getActiveObject().lockMovementX = !self.fCanvas.getActiveObject().lockMovementX;
+            self.fCanvas.getActiveObject().lockMovementY = !self.fCanvas.getActiveObject().lockMovementY;
+            self.fCanvas.getActiveObject().cornerColor = self.fCanvas.getActiveObject().lockMovementX ? 'rgba(150,0,0,0.5)' : 'rgba(102,153,255,0.5)';
+            self.fCanvas.getActiveObject().borderColor = self.fCanvas.getActiveObject().lockMovementX ? 'rgba(150,0,0,0.5)' : 'rgba(102,153,255,0.5)';
+            self.fCanvas.renderAll();
           }
           if (self.fCanvas.getActiveGroup()) {
             ref1 = self.fCanvas.getActiveGroup().objects;
             for (k = 0, len1 = ref1.length; k < len1; k++) {
               activeGroupObject = ref1[k];
-              activeGroupObject.selectable = false;
+              activeGroupObject.lockMovementX = true;
+              activeGroupObject.lockMovementY = true;
+              activeGroupObject.cornerColor = activeGroupObject.lockMovementX ? 'rgba(150,0,0,0.5)' : 'rgba(102,153,255,0.5)';
+              activeGroupObject.borderColor = activeGroupObject.lockMovementX ? 'rgba(150,0,0,0.5)' : 'rgba(102,153,255,0.5)';
             }
-            return self.fCanvas.deactivateAll().renderAll();
+            return self.fCanvas.renderAll();
           }
           break;
         case 27:
@@ -209,7 +215,6 @@ window.PaintMasterPlugin.PaintMaster = PaintMaster = (function() {
   };
 
   PaintMaster.prototype.settingChanged = function(name, oldVal, newVal) {
-    console.log(arguments);
     if (this.activeTool) {
       this.activeTool.onSettingsChange();
     }
@@ -301,8 +306,13 @@ window.PaintMasterPlugin.PaintMaster = PaintMaster = (function() {
     self = this;
     html = "<div class='pm-aux__control pm-aux__control-canvas-width'> <label> Ширина холста: </label> <input type='number' min='1' max='4000' value='" + (parseInt(this.settings.canvasWidth)) + "'> </div>";
     this.auxEl.prepend(html);
-    return $(this.auxEl).on('change', '.pm-aux__control-canvas-width input', function(e) {
+    $(this.auxEl).on('change', '.pm-aux__control-canvas-width input', function(e) {
       return self.settings.canvasWidth = e.currentTarget.valueAsNumber;
+    });
+    return $(document).on('pmSettingsChange', function(e) {
+      if (e.originalEvent.detail.property === 'canvasWidth') {
+        return $('.pm-aux__control-canvas-width input').val(e.originalEvent.detail.newVal);
+      }
     });
   };
 
@@ -311,8 +321,13 @@ window.PaintMasterPlugin.PaintMaster = PaintMaster = (function() {
     self = this;
     html = "<div class='pm-aux__control pm-aux__control-canvas-height'> <label> Высота холста: </span> </label> <input type='number' min='1' max='4000' value='" + (parseInt(this.settings.canvasHeight)) + "'> </div>";
     this.auxEl.prepend(html);
-    return $(this.auxEl).on('change', '.pm-aux__control-canvas-height input', function(e) {
+    $(this.auxEl).on('change', '.pm-aux__control-canvas-height input', function(e) {
       return self.settings.canvasHeight = e.currentTarget.valueAsNumber;
+    });
+    return $(document).on('pmSettingsChange', function(e) {
+      if (e.originalEvent.detail.property === 'canvasHeight') {
+        return $('.pm-aux__control-canvas-height input').val(e.originalEvent.detail.newVal);
+      }
     });
   };
 
@@ -468,11 +483,11 @@ window.PaintMasterPlugin.tools.BaseTool = BaseTool = (function() {
   };
 
   BaseTool.prototype.displayPalette = function() {
-    return $(this.paintMaster.paletteEl).css('visibility', 'visible');
+    return $(this.paintMaster.paletteEl).css('display', 'block');
   };
 
   BaseTool.prototype.hidePalette = function() {
-    return $(this.paintMaster.paletteEl).css('visibility', 'hidden');
+    return $(this.paintMaster.paletteEl).css('display', 'none');
   };
 
   BaseTool.prototype.displayBrushSize = function() {
@@ -518,7 +533,7 @@ window.PaintMasterPlugin.tools.AddText = AddText = (function(superClass) {
     var mouse;
     mouse = this.canvas.getPointer(e.e);
     if (this.active) {
-      this.iText = new fabric.IText("Текст", {
+      this.iText = new fabric.IText('', {
         fontFamily: 'arial black',
         left: mouse.x,
         top: mouse.y,
@@ -527,6 +542,8 @@ window.PaintMasterPlugin.tools.AddText = AddText = (function(superClass) {
       });
       this.fCanvas.add(this.iText);
       this.canvas.renderAll().setActiveObject(this.iText);
+      this.canvas.getActiveObject().trigger('dblclick');
+      this.iText.enterEditing();
       AddText.__super__.mousedown.call(this);
     }
     return this.deactivate();
@@ -622,7 +639,7 @@ window.PaintMasterPlugin.tools.ClipboardBackgroundPaste = ClipboardBackgroundPas
     this.y = window.scrollY;
     window.myPaste = this.onPasteEvent;
     html = "<div id='pm-image-paste-field' contenteditable='true' onpaste='window.myPaste(this, event)' style='width: 1px; height: 1px; overflow: hidden;' ></div>";
-    pasteButtons = navigator.platform.match(/Mac/).length > 0 ? "<span>&#8984;</span>&nbsp;&#8212;&nbsp;<span>V</span>" : "<span>Ctrl</span>&nbsp;&#8212;&nbsp;<span>V</span>";
+    pasteButtons = true ? "<span>&#8984;</span>&nbsp;&#8212;&nbsp;<span>V</span>" : "<span>Ctrl</span>&nbsp;&#8212;&nbsp;<span>V</span>";
     if (this.paintMaster.settings.canvasWidth > 400) {
       helpHtml = "<div class='pm-canvas-overlay'> <div class='pm-canvas-overlay__title'> <div> Нажмите <div class='important'>" + pasteButtons + "</div> <div> чтобы вставить картинку </div> <div> из буфера </div> </div> </div>";
     } else if (this.paintMaster.settings.canvasWidth > 300) {
@@ -716,6 +733,7 @@ window.PaintMasterPlugin.tools.ClipboardImagePaste = ClipboardImagePaste = (func
     this.name = 'Вставить картинку из буфера';
     this.help = 'Чтобы вставить картинку из буфера, нажмите <b>CTRL-V</b> </br> <b>Внимание!</b> Размеры холста будут изменены в соответствии с размерами вставленного изображения';
     this.id = 'clipboard-image-paste';
+    this.resize = true;
     ClipboardImagePaste.__super__.constructor.call(this, this.paintMaster);
     this.clickEventListener = function(e) {
       return $('#pm-image-paste-field').focus();
@@ -727,8 +745,8 @@ window.PaintMasterPlugin.tools.ClipboardImagePaste = ClipboardImagePaste = (func
     this.x = window.scrollX;
     this.y = window.scrollY;
     window.myPaste = this.onPasteEvent;
-    html = "<div id='pm-image-paste-field' contenteditable='true' onpaste='window.myPaste(this, event)' style='width: 1px; height: 1px; overflow: hidden;' ></div>";
-    pasteButtons = navigator.platform.match(/Mac/).length > 0 ? "<span>&#8984;</span>&nbsp;&#8212;&nbsp;<span>V</span>" : "<span>Ctrl</span>&nbsp;&#8212;&nbsp;<span>V</span>";
+    html = "<div id='pm-image-paste-field' contenteditable='true' onpaste='window.myPaste(this, event)' style='width: 1px; height: 1px; overflow: hidden; outline: none;' ></div>";
+    pasteButtons = navigator.platform.match(/Mac/) !== null ? "<span>&#8984;</span>&nbsp;+&nbsp;<span>V</span>" : "<span>Ctrl</span>&nbsp;+&nbsp;<span>V</span>";
     if (this.paintMaster.settings.canvasWidth > 400) {
       helpHtml = "<div class='pm-canvas-overlay'> <div class='pm-canvas-overlay__title'> <div> Нажмите <div class='important'>" + pasteButtons + "</div> <div> чтобы вставить картинку </div> <div> из буфера </div> </div> </div>";
     } else if (this.paintMaster.settings.canvasWidth > 300) {
@@ -803,7 +821,12 @@ window.PaintMasterPlugin.tools.ClipboardImagePaste = ClipboardImagePaste = (func
       imgInstance = new fabric.Image(image, {});
       this.canvas.add(imgInstance);
       this.canvas.renderAll();
-      return this.deactivate();
+      this.deactivate();
+      if (this.resize) {
+        this.paintMaster.settings.canvasHeight = imgInstance.height;
+        this.paintMaster.settings.canvasWidth = imgInstance.width;
+        return this.resize = false;
+      }
     }).bind(this);
   };
 
@@ -835,7 +858,8 @@ window.PaintMasterPlugin.tools.Crop = Crop = (function(superClass) {
       top: 50,
       width: 100,
       height: 100,
-      fill: ''
+      fill: '',
+      lockRotation: true
     });
     this.canvas.add(this.trueSight);
     ts = this.trueSight;
@@ -988,6 +1012,92 @@ window.PaintMasterPlugin.tools.Crop = Crop = (function(superClass) {
 
 })(window.PaintMasterPlugin.tools.BaseTool);
 
+strSVG = '<?xml version="1.0" encoding="iso-8859-1"?> <!-- Generator: Adobe Illustrator 16.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  --> <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"> <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="268.832px" height="268.832px" viewBox="0 0 268.832 268.832" style="enable-background:new 0 0 268.832 268.832;" xml:space="preserve"> <g> <path d="M223.255,167.493c-4.881-4.882-12.797-4.882-17.678,0l-58.661,58.661V12.5c0-6.903-5.598-12.5-12.5-12.5 c-6.904,0-12.5,5.597-12.5,12.5v213.654l-58.661-58.659c-4.883-4.881-12.797-4.881-17.678,0c-4.883,4.882-4.883,12.796,0,17.678 l80,79.998c2.439,2.44,5.64,3.661,8.839,3.661s6.397-1.221,8.839-3.661l80-80C228.137,180.289,228.137,172.375,223.255,167.493z"/> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> </svg>';
+
+window.PaintMasterPlugin.tools.DrawArrow = DrawArrow = (function(superClass) {
+  extend(DrawArrow, superClass);
+
+  function DrawArrow(paintMaster1) {
+    this.paintMaster = paintMaster1;
+    this.onClick = bind(this.onClick, this);
+    this.name = 'Стрелка';
+    this.id = 'draw-rect';
+    this.active = false;
+    this.canvas = this.paintMaster.fCanvas;
+    DrawArrow.__super__.constructor.call(this, this.paintMaster);
+  }
+
+  DrawArrow.prototype.activate = function() {
+    DrawArrow.__super__.activate.call(this);
+    this.lockDrag();
+    this.displayPalette();
+    return this.setAuxDisplay('.pm-aux__control-brush-size', 'block');
+  };
+
+  DrawArrow.prototype.deactivate = function() {
+    DrawArrow.__super__.deactivate.call(this);
+    this.unlockDrag();
+    this.hidePalette();
+    return this.setAuxDisplay('.pm-aux__control-brush-size', 'none');
+  };
+
+  DrawArrow.prototype.mousedown = function(e) {
+    var self;
+    this.initialMouse = this.canvas.getPointer(e.e);
+    self = this;
+    fabric.loadSVGFromString(strSVG, function(arrow) {
+      arrow = arrow[0];
+      arrow.fill = self.paintMaster.settings.color;
+      arrow.top = self.initialMouse.y;
+      arrow.left = self.initialMouse.x;
+      arrow.originX = 'center';
+      arrow.originY = 'top';
+      arrow.angle = 10;
+      arrow.scaleX = 0.1 * parseInt(self.paintMaster.settings.brushSize);
+      arrow.scaleY = 0.1;
+      self.initialHeight = arrow.height;
+      self.canvas.add(arrow).renderAll();
+      return self.canvas.setActiveObject(arrow);
+    });
+    return this.drawing = true;
+  };
+
+  DrawArrow.prototype.mousemove = function(e) {
+    var angleInDegrees, arrow, currentX, currentY, deltaHeight, deltaX, deltaY, distance, mouse, proption;
+    if (!this.drawing) {
+      return;
+    }
+    mouse = this.canvas.getPointer(e.e);
+    currentX = mouse.x;
+    currentY = mouse.y;
+    deltaY = currentY - this.initialMouse.y;
+    deltaX = currentX - this.initialMouse.x;
+    angleInDegrees = Math.atan2(deltaY, deltaX) * 180 / Math.PI - 90;
+    distance = Math.sqrt(Math.abs(Math.pow(deltaX, 2) + Math.pow(deltaY, 2)));
+    deltaHeight = this.initialHeight - distance;
+    proption = Math.abs(distance / this.initialHeight);
+    arrow = this.canvas.getActiveObject();
+    arrow.set('angle', angleInDegrees);
+    arrow.set('scaleY', proption);
+    this.aArrow = arrow;
+    return this.canvas.renderAll();
+  };
+
+  DrawArrow.prototype.mouseup = function(e) {
+    this.drawing = false;
+    this.canvas.remove(this.canvas.getActiveObject());
+    this.canvas.add(this.aArrow);
+    this.canvas.setActiveObject(this.aArrow);
+    this.lockDrag();
+    return this.canvas.deactivateAll().renderAll();
+  };
+
+  DrawArrow.prototype.onClick = function() {};
+
+  return DrawArrow;
+
+})(window.PaintMasterPlugin.tools.BaseTool);
+
 window.PaintMasterPlugin.tools.DrawEllipse = DrawEllipse = (function(superClass) {
   extend(DrawEllipse, superClass);
 
@@ -1035,7 +1145,7 @@ window.PaintMasterPlugin.tools.DrawEllipse = DrawEllipse = (function(superClass)
       top: this.y,
       fill: '',
       stroke: this.paintMaster.settings.color,
-      strokeWidth: this.paintMaster.settings.brushSize
+      strokeWidth: parseInt(this.paintMaster.settings.brushSize)
     });
     return this.canvas.add(circle).renderAll().setActiveObject(circle);
   };
@@ -1073,7 +1183,7 @@ window.PaintMasterPlugin.tools.DrawEllipse = DrawEllipse = (function(superClass)
       top: aCircle.top,
       fill: '',
       stroke: this.paintMaster.settings.color,
-      strokeWidth: this.paintMaster.settings.brushSize
+      strokeWidth: parseInt(this.paintMaster.settings.brushSize)
     });
     this.canvas.add(circle).renderAll();
     this.canvas.remove(this.canvas.getActiveObject());
@@ -1133,7 +1243,7 @@ window.PaintMasterPlugin.tools.DrawRect = DrawRect = (function(superClass) {
       top: this.y,
       fill: '',
       stroke: this.paintMaster.settings.color,
-      strokeWidth: this.paintMaster.settings.brushSize
+      strokeWidth: parseInt(this.paintMaster.settings.brushSize)
     });
     return this.canvas.add(square).renderAll().setActiveObject(square);
   };
@@ -1154,6 +1264,7 @@ window.PaintMasterPlugin.tools.DrawRect = DrawRect = (function(superClass) {
     if (this.x > currentX) {
       square.set('left', this.x - width);
     }
+    console.log("left: " + (this.x - width));
     square.set('height', height);
     if (this.y > currentY) {
       square.set('top', this.y - height);
@@ -1172,7 +1283,7 @@ window.PaintMasterPlugin.tools.DrawRect = DrawRect = (function(superClass) {
       top: aSquare.top,
       fill: '',
       stroke: this.paintMaster.settings.color,
-      strokeWidth: this.paintMaster.settings.brushSize
+      strokeWidth: parseInt(this.paintMaster.settings.brushSize)
     });
     this.canvas.add(square).renderAll();
     this.canvas.remove(this.canvas.getActiveObject());
@@ -1497,11 +1608,11 @@ $(document).ready(function() {
     position: 'top'
   });
   painter.addToolboxItem(PaintMasterPlugin.tools.ClipboardImagePaste);
-  painter.addToolboxItem(PaintMasterPlugin.tools.ClipboardBackgroundPaste);
   painter.addToolboxItem(PaintMasterPlugin.tools.DrawingModeSwitch);
   painter.addToolboxItem(PaintMasterPlugin.tools.Crop);
   painter.addToolboxItem(PaintMasterPlugin.tools.DrawRect);
   painter.addToolboxItem(PaintMasterPlugin.tools.DrawEllipse);
   painter.addToolboxItem(PaintMasterPlugin.tools.AddText);
-  return painter.addToolboxItem(PaintMasterPlugin.tools.WidthAndHeightSettings);
+  painter.addToolboxItem(PaintMasterPlugin.tools.WidthAndHeightSettings);
+  return painter.addToolboxItem(PaintMasterPlugin.tools.DrawArrow);
 });

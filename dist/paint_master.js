@@ -1,4 +1,4 @@
-var AddText, BaseTool, ChooseColor, ClipboardBackgroundPaste, ClipboardImagePaste, Crop, DrawArrow, DrawEllipse, DrawRect, DrawingModeSwitch, OpenSettings, PaintMaster, SelectColor, SettingsItem, WidthAndHeightSettings, strSVG,
+var AddText, BaseTool, ChooseColor, ClipboardBackgroundPaste, ClipboardImagePaste, Crop, DrawArrow, DrawEllipse, DrawRect, DrawingModeSwitch, OpenSettings, PaintMaster, SelectColor, SelectionModeSwitch, SettingsItem, WidthAndHeightSettings, strSVG,
   bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -1021,7 +1021,7 @@ window.PaintMasterPlugin.tools.DrawArrow = DrawArrow = (function(superClass) {
     this.paintMaster = paintMaster1;
     this.onClick = bind(this.onClick, this);
     this.name = 'Стрелка';
-    this.id = 'draw-rect';
+    this.id = 'draw-arrow';
     this.active = false;
     this.canvas = this.paintMaster.fCanvas;
     DrawArrow.__super__.constructor.call(this, this.paintMaster);
@@ -1567,6 +1567,38 @@ window.PaintMasterPlugin.tools.SelectColor = SelectColor = (function(superClass)
 
 })(window.PaintMasterPlugin.tools.BaseTool);
 
+window.PaintMasterPlugin.tools.SelectionModeSwitch = SelectionModeSwitch = (function(superClass) {
+  extend(SelectionModeSwitch, superClass);
+
+  function SelectionModeSwitch(paintMaster1) {
+    this.paintMaster = paintMaster1;
+    this.onClick = bind(this.onClick, this);
+    this.name = 'Выделение';
+    this.id = 'selection-mode';
+    SelectionModeSwitch.__super__.constructor.call(this, this.paintMaster);
+  }
+
+  SelectionModeSwitch.prototype.onClick = function() {
+    return this.paintMaster.fCanvas.isDrawingMode = false;
+  };
+
+  SelectionModeSwitch.prototype.activate = function() {
+    SelectionModeSwitch.__super__.activate.call(this);
+    this.setAuxDisplay('.pm-aux__control-canvas-width', 'block');
+    return this.setAuxDisplay('.pm-aux__control-canvas-height', 'block');
+  };
+
+  SelectionModeSwitch.prototype.deactivate = function() {
+    SelectionModeSwitch.__super__.deactivate.call(this);
+    this.hidePalette();
+    this.setAuxDisplay('.pm-aux__control-canvas-width', 'none');
+    return this.setAuxDisplay('.pm-aux__control-canvas-height', 'none');
+  };
+
+  return SelectionModeSwitch;
+
+})(window.PaintMasterPlugin.tools.BaseTool);
+
 window.PaintMasterPlugin.tools.WidthAndHeightSettings = WidthAndHeightSettings = (function(superClass) {
   extend(WidthAndHeightSettings, superClass);
 
@@ -1607,12 +1639,11 @@ $(document).ready(function() {
     height: 500,
     position: 'top'
   });
-  painter.addToolboxItem(PaintMasterPlugin.tools.ClipboardImagePaste);
-  painter.addToolboxItem(PaintMasterPlugin.tools.DrawingModeSwitch);
+  painter.addToolboxItem(PaintMasterPlugin.tools.SelectionModeSwitch);
   painter.addToolboxItem(PaintMasterPlugin.tools.Crop);
   painter.addToolboxItem(PaintMasterPlugin.tools.DrawRect);
   painter.addToolboxItem(PaintMasterPlugin.tools.DrawEllipse);
-  painter.addToolboxItem(PaintMasterPlugin.tools.AddText);
-  painter.addToolboxItem(PaintMasterPlugin.tools.WidthAndHeightSettings);
-  return painter.addToolboxItem(PaintMasterPlugin.tools.DrawArrow);
+  painter.addToolboxItem(PaintMasterPlugin.tools.DrawingModeSwitch);
+  painter.addToolboxItem(PaintMasterPlugin.tools.DrawArrow);
+  return painter.addToolboxItem(PaintMasterPlugin.tools.AddText);
 });

@@ -1,3 +1,6 @@
+$tool-color: #546e7a
+$tool-color-active: #2196f3
+
 canvas
   border: 1px solid black
 
@@ -114,9 +117,9 @@ canvas
     font-size: 1.5em
     opacity: 1
     position: relative
-    color: rgba(100,100,100,0.85)
+    color: $tool-color
     &.active
-      color: rgba(10,10,100,0.75)
+      color: $tool-color-active
       .pm-tooltip
         text-shadow: none
     &:hover

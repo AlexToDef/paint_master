@@ -26,6 +26,7 @@ gulp.task('build', function() {
   gulp.src([
       'source/stylesheets/toolbox.sass',
       'source/stylesheets/icon_font.sass',
+      'source/stylesheets/test_icon_font.sass',
       'source/stylesheets/tools.sass',
       'source/stylesheets/positioning.sass'
       ])
@@ -39,6 +40,12 @@ gulp.task('build', function() {
 
   gulp.src('source/stylesheets/fonts/*.*')
     .pipe(gulp.dest('dist/fonts/'))
+
+  gulp.src('source/stylesheets/font-awesome-fonts/*.*')
+    .pipe(gulp.dest('dist/font-awesome-fonts/'))
+
+  gulp.src('source/stylesheets/custom-fonts/*.*')
+    .pipe(gulp.dest('dist/custom-fonts/'))
 });
 
 gulp.task('scripts', function() {

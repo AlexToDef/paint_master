@@ -1,0 +1,75 @@
+.pm-bar
+  position: relative
+  min-width: 25em
+  z-index: 1000
+  overflow: hidden
+
+.pm-toolbox
+  float: left
+  display: flex
+  flex-direction: row
+  justify-content: flex-start
+  width: 300px
+
+.pm-toolbox__tool
+  height: auto
+  padding: 5px 15px
+  flex: 0 0 1em
+  height: 1em
+  line-height: 1em
+  margin: 5px
+  text-align: center
+  font-size: 1.5em
+  opacity: 1
+  position: relative
+  color: $tool-color
+  &.active
+    color: $tool-color-active
+    .pm-tooltip
+      text-shadow: none
+  &:hover
+    color: rgba(10,10,100,0.75)
+
+.pm-toolbox__tooltip
+  position: absolute
+  height: auto
+  background: rgba(16,16,16,0.75)
+  color: #EEE
+  padding: 0.3em 0.5em
+  border-radius: 5px
+  font-size: 0.7em
+  min-width: 10em
+  width: auto
+  &.pm-tooltip-bottom
+    top: 140%
+    left: 20%
+    &:after, &:before
+      bottom: 100%
+      left: 10%
+      border: solid transparent
+      content: " "
+      height: 0
+      width: 0
+      position: absolute
+      pointer-events: none
+    &:after
+      border-color: rgba(16,16,16,0)
+      border-bottom-color: rgba(16,16,16,0.75)
+      border-width: 0.5em
+      margin-left: -0.5em
+  &.pm-tooltip-top
+    bottom: 140%
+    &:after, &:before
+      top: 100%
+      left: 10%
+      border: 1px solid transparent
+      content: ''
+      height: 0
+      width: 0
+      position: absolute
+      pointer-events: none
+    &:after
+      border-color: rgba(16,16,16,0)
+      border-top-color: rgba(16,16,16,0.75)
+      border-width: 0.5em
+      margin-left: -0.5em

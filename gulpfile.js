@@ -14,6 +14,10 @@ var server = require('gulp-server-livereload');
 
 gulp.task('build', function() {
   gulp.src([
+      'source/javascripts/essentials/namespace_initializer.coffee',
+      'source/javascripts/essentials/modules/attribute_events.coffee',
+      'source/javascripts/essentials/modules/canvas_elements.coffee',
+      'source/javascripts/essentials/modules/events_listeners.coffee',
       'source/javascripts/essentials/paint_master.coffee',
       'source/javascripts/tools/base_tool.coffee',
       'source/javascripts/tools/*.coffee',
@@ -24,6 +28,8 @@ gulp.task('build', function() {
     .pipe(gulp.dest('./dist'))
 
   gulp.src([
+      'source/stylesheets/pm_variables.sass',
+      'source/stylesheets/pm_bar.sass',
       'source/stylesheets/toolbox.sass',
       'source/stylesheets/icon_font.sass',
       'source/stylesheets/test_icon_font.sass',

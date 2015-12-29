@@ -2,7 +2,7 @@ window.PaintMasterPlugin.tools.BaseTool = class BaseTool
   constructor: (@paintMaster) ->
     @fCanvas = @paintMaster.fCanvas
     @canvas = @fCanvas
-    @html = "<div class='pm-tool #{@id}' data-pm-tool-id='#{@id}'></div>"
+    @html = "<div class='pm-toolbox__tool #{@id}' data-pm-tool-id='#{@id}'></div>"
     @active = false
     @help ||= ''
 
@@ -13,7 +13,7 @@ window.PaintMasterPlugin.tools.BaseTool = class BaseTool
     return
 
   onRemove: ->
-    @paintMaster.wrapperEl.find("pm-tool.#{@id}").remove()
+    @paintMaster.wrapper.find(".pm-toolbox__tool.#{@id}").remove()
 
   onMouseover: (e) ->
     tooltipPosition = 'bottom'
@@ -49,12 +49,12 @@ window.PaintMasterPlugin.tools.BaseTool = class BaseTool
   activate: =>
     for key, tool of @paintMaster.toolbox
       tool.deactivate() unless tool == @
-    $(".pm-tool.#{@id}").addClass('active')
+    $(".pm-toolbox__tool.#{@id}").addClass('pm-toolbox__tool_active')
     @displayHelp()
     @active = true
 
   deactivate: =>
-    $(".pm-tool.#{@id}").removeClass('active')
+    $(".pm-toolbox__tool.#{@id}").removeClass('pm-toolbox__tool_active')
     @hideHelp()
     @paintMaster.activeTool = null
     @active = false

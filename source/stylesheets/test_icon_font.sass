@@ -12,16 +12,15 @@
   font-weight: normal
   font-style: normal
 
-.pm-tool, .pm-current-tool .icon
+.pm-toolbox__tool
   display: inline-block
   font: normal normal normal 14px/1 FontAwesome
-  font-size: inherit
+  font-size: 1.5em
   text-rendering: auto
   -webkit-font-smoothing: antialiased
   -moz-osx-font-smoothing: grayscale
-
-
-.pm-tool, .pm-current-tool .icon
+  &.pm-toolbox__tool_active
+    color: $tool-color-active
   &.add-text
     &:before
       font-family: "sq-redmine"
@@ -34,8 +33,6 @@
     &:before
       font-family: "sq-redmine"
       content: "\63"
-
-.pm-tool, .pm-current-tool .icon
   &:before
     font-family: FontAwesome
     font-style: normal
@@ -55,8 +52,9 @@
     &:before
       content: "\e00e"
   &.clipboard-image-paste
-    &:before
-      content: "\e010"
+    color: black
+    font-size: 0.9em
+    width: 500px !important
   &.selection-mode
     &:before
       content: "\f047"
@@ -66,14 +64,3 @@
     overflow: hidden
     &:before
       content: "\f176"
-
-.pm-tool.select-color
-  overflow: hidden
-
-.pm-tool.select-color input
-  opacity: 0
-  top: -40px
-  left: -40px
-  position: relative
-  width: 100px
-  height: 100px

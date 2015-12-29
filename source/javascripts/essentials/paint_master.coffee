@@ -1,40 +1,45 @@
-window.PaintMasterPlugin = {}
-window.PaintMasterPlugin.tools = {}
 window.PaintMasterPlugin.PaintMaster = class PaintMaster
   constructor: (@opts) ->
+    @importModule 'CanvasElements'
+    @importModule 'EventsListeners'
+    @importModule 'AttributeEvents'
+
     @toolbox = {}
     @settings =
-      canvasWidth: localStorage['pmAttr[canvasWidth]'] || @opts.width
+      canvasWidth:  localStorage['pmAttr[canvasWidth]']  || @opts.width
       canvasHeight: localStorage['pmAttr[canvasHeight]'] || @opts.height
-      fontSize: localStorage['pmAttr[fontSize]'] || 16
-      brushSize: localStorage['pmAttr[brushSize]'] || 5
-      color: localStorage['pmAttr[color]'] || '#ff421f'
+      fontSize:     localStorage['pmAttr[fontSize]']     || 16
+      brushSize:    localStorage['pmAttr[brushSize]']    || 5
+      color:        localStorage['pmAttr[color]']        || '#ff421f'
 
     @fCanvas = new fabric.Canvas(@opts.id)
     @fCanvas.freeDrawingBrush.color = @settings.color
     @fCanvas.freeDrawingBrush.width = @settings.brushSize
-
-    @wrapperEl = $(@fCanvas.wrapperEl)
-
-    @drawToolbox()
-    @drawAdditionalToolbox()
-    @drawPalette()
-    @drawBrushSizeControl()
-    @drawCanvasWidthControl()
-    @drawCanvasHeightControl()
-    @drawFontSizeControl()
-    @setToolboxEventListeners()
-    @setDrawListeners()
-    @setAttributeListeners()
-
     @fCanvas.setWidth @settings.canvasWidth
     @fCanvas.setHeight @settings.canvasHeight
     @fCanvas.setBackgroundColor 'white'
     @fCanvas.renderAll()
 
+    @canvas = @fCanvas
+
+    @canvasWrapper = $(@fCanvas.wrapperEl)
+    $(@canvasWrapper).wrapAll("<div class='pm-container'></div>")
+    @wrapper = @canvasWrapper.parent()
+
+    @drawToolbox()
+
+    @setToolboxEventListeners()
+    @setDrawListeners()
+
+    @setWatchersOnCollection(@, @settings)
+
+  importModule: (moduleName) ->
+    for name, method of window.PaintMasterPlugin.modules[moduleName]
+      @[name] = method
+
   drawToolbox: ->
-    html = "
-      <div class='pm-toolbox-wrapper pm-toolbox-#{@opts.position}'>
+    pmBarTop = "
+      <div class='pm-bar pm-bar_top'>
         <div class='pm-toolbox'></div>
         <div class='pm-palette'></div>
         <div class='pm-aux'></div>
@@ -48,23 +53,20 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
         </div>
       </div>
     "
-    if @opts.position == 'top' or @opts.position == 'left'
-      @toolboxEl = $(html).insertBefore(@wrapperEl).find('.pm-toolbox')
-    else if @opts.position == 'right'
-      @toolboxEl = $(html).insertAfter(@wrapperEl).find('.pm-toolbox')
-    @currentToolNameEl = $(@toolboxEl).parent().find('.pm-current-tool-name')
-    @currentToolEl = $(@toolboxEl).parent().find('.pm-current-tool')
-    @containerEl = $('.pm-toolbox-wrapper, .canvas-container').wrapAll("<div class='pm-main-container pm-main-container-#{@opts.position}'></div>")
-    @paletteEl = @toolboxEl.parent().find('.pm-palette')
-    @auxEl = @toolboxEl.parent().find('.pm-aux')
+    @topBar = $(pmBarTop).prependTo(@wrapper)
+    @bottomBar = $("<div class='pm-bar pm-bar_bottom'></div>").prependTo(@wrapper)
 
-  drawAdditionalToolbox: ->
-    html = "<div class='pm-additional-toolbox'></div>"
+    # @bottomBar = 
+    # @currentToolNameEl = $(@toolboxEl).parent().find('.pm-current-tool-name')
+    # @currentToolEl = $(@toolboxEl).parent().find('.pm-current-tool')
+    # @containerEl = $('.pm-toolbox-wrapper, .canvas-container').wrapAll("<div class='pm-main-container pm-main-container-#{@opts.position}'></div>")
+    # @paletteEl = @toolboxEl.parent().find('.pm-palette')
+    # @auxEl = @toolboxEl.parent().find('.pm-aux')
 
   setToolboxEventListeners: ->
     self = @
-    $(@containerEl).on 'click', '.pm-toolbox .pm-tool', (e) ->
-      toolId = $(this).data('pmToolId')
+    $(@wrapper).on 'click', '.pm-toolbox .pm-toolbox__tool', (e) ->
+      toolId = $(@).data('pmToolId')
       self.toolbox[toolId].onClick(e)
       if self.activeTool == self.toolbox[toolId]
         tool.deactivate() for key, tool of self.toolbox
@@ -73,70 +75,41 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
         self.toolbox[toolId].activate()
         self.activeTool = self.toolbox[toolId]
 
-    $(@containerEl).on 'change', 'input', (e) ->
-      toolId = $(this).parent().data('pmToolId')
+    $(@wrapper).on 'change', 'input', (e) ->
+      toolId = $(@).parent().data('pmToolId')
       self.toolbox[toolId].onChange(e) if toolId
 
-    $(@containerEl).on 'mouseover', '.pm-tool', (e) ->
-      toolId = $(this).data('pmToolId')
+    $(@wrapper).on 'mouseover', '.pm-tool', (e) ->
+      toolId = $(@).data('pmToolId')
       self.toolbox[toolId].onMouseover(e)
 
-    $(@containerEl).on 'mouseleave', '.pm-tool', (e) ->
-      toolId = $(this).data('pmToolId')
+    $(@wrapper).on 'mouseleave', '.pm-tool', (e) ->
+      toolId = $(@).data('pmToolId')
       self.toolbox[toolId].onMouseleave(e)
 
-    onKeyDownHandler = (e) ->
-      console.log e.keyCode
-      switch e.keyCode
-        when 46, 8
-          if self.fCanvas.getActiveObject() or self.fCanvas.getActiveGroup()
-            e.preventDefault()
-            if self.activeTool
-              self.activeTool.onBackspace(e)
-            else
-              activeObject = self.fCanvas.getActiveObject()
-              self.fCanvas.remove activeObject
-              if self.fCanvas.getActiveGroup()
-                for activeGroupObject in self.fCanvas.getActiveGroup().objects
-                  self.fCanvas.deactivateAll().remove(activeGroupObject).renderAll()
-        when 13
-          if self.fCanvas.getActiveObject() and self.activeTool
-            e.preventDefault()
-            self.activeTool.onSubmit(e)
-          if self.fCanvas.getActiveObject()
-            self.fCanvas.getActiveObject().lockMovementX = !self.fCanvas.getActiveObject().lockMovementX
-            self.fCanvas.getActiveObject().lockMovementY = !self.fCanvas.getActiveObject().lockMovementY 
-            self.fCanvas.getActiveObject().cornerColor = if self.fCanvas.getActiveObject().lockMovementX then 'rgba(150,0,0,0.5)' else 'rgba(102,153,255,0.5)'
-            self.fCanvas.getActiveObject().borderColor = if self.fCanvas.getActiveObject().lockMovementX then 'rgba(150,0,0,0.5)' else 'rgba(102,153,255,0.5)'
-            self.fCanvas.renderAll()
-          if self.fCanvas.getActiveGroup()
-            for activeGroupObject in self.fCanvas.getActiveGroup().objects
-              # activeGroupObject.selectable = false
-              activeGroupObject.lockMovementX = true
-              activeGroupObject.lockMovementY = true
-              activeGroupObject.cornerColor = if activeGroupObject.lockMovementX then 'rgba(150,0,0,0.5)' else 'rgba(102,153,255,0.5)'
-              activeGroupObject.borderColor = if activeGroupObject.lockMovementX then 'rgba(150,0,0,0.5)' else 'rgba(102,153,255,0.5)'
-            self.fCanvas.renderAll()
-        when 27
-          self.fCanvas.deactivateAll().remove(activeGroupObject).renderAll()
-          self.activeTool.deactivate() if self.activeTool
-
-              
-    window.onkeydown = onKeyDownHandler
+    $(window).on 'keydown', (e) ->
+      console.log self.keydown
+      self.keydown[e.keyCode](e, self)
 
   setDrawListeners: ->
-    @fCanvas.observe 'mouse:down', (e) =>
+    @canvas.observe 'mouse:down', (e) =>
       @activeTool.mousedown(e) if @activeTool and @activeTool.active
-    @fCanvas.observe 'mouse:move', (e) =>
+    @canvas.observe 'mouse:move', (e) =>
       @activeTool.mousemove(e) if @activeTool and @activeTool.active
-    @fCanvas.observe 'mouse:up', (e) =>
+    @canvas.observe 'mouse:up', (e) =>
       @activeTool.mouseup(e) if @activeTool and @activeTool.active
 
 
-  addToolboxItem: (item) ->
+  addToolboxItem: (item, bar) ->
+    if bar == 'top'
+      item = new item(@)
+      $(@topBar).find('.pm-toolbox').append(item.html)
+      @toolbox[item.id] = item
+
+  addAdditionalToolboxItem: (item) ->
     item = new item(@)
-    @toolboxEl.append(item.html)
-    @toolbox[item.id] = item
+    @additionalToolboxEl.append(item.html)
+    @toolbox[item.id] = item 
 
   removeToolboxItem: (itemId) ->
     @toolbox[itemId].onRemove()
@@ -153,12 +126,6 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
     })
     return img
 
-  setAttributeListeners: ->
-    self = @
-    for name, oldVal of @settings
-      tmpname = name.toString()
-      @setAttributeWatchers(@settings, name)
-
   settingChanged: (name, oldVal, newVal) ->
     @activeTool.onSettingsChange() if @activeTool
     switch name
@@ -171,21 +138,9 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
       when 'color'
         @fCanvas.freeDrawingBrush.color = parseInt(newVal)
 
-  setAttributeWatchers: (obj, propName) ->
-    self = @
-    savedVal = obj["#{propName}"]
-    Object.defineProperty obj, propName, {
-      get: ->
-        obj["_#{propName}"]
-      set: (newVal) ->
-        oldVal = obj["_#{propName}"]
-        obj["_#{propName}"] = newVal
-        self.settingChanged(propName, oldVal, newVal)
-        event = new CustomEvent('pmSettingsChange', detail: { property: propName, oldVal: oldVal, newVal: newVal });
-        document.dispatchEvent(event)
-        window.localStorage["pmAttr[#{propName}]"] = newVal
-    }
-    obj["_#{propName}"] = savedVal
+  drawAdditionalToolbox: ->
+    html = "<div class='pm-additional-toolbox'></div>"
+    @additionalToolboxEl = $(html).appendTo('.pm-main-container')
   
   drawPalette: ->
     self = @

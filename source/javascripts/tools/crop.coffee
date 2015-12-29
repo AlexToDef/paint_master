@@ -135,7 +135,6 @@ window.PaintMasterPlugin.tools.Crop = class Crop extends window.PaintMasterPlugi
     @canvas.deactivateAll().renderAll()
 
     img = @canvas.toDataURL({
-      format: 'png',
       left: left,
       top: top,
       width: width,

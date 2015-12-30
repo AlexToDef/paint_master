@@ -19,6 +19,8 @@ gulp.task('build', function() {
       'source/javascripts/essentials/modules/canvas_elements.coffee',
       'source/javascripts/essentials/modules/events_listeners.coffee',
       'source/javascripts/essentials/paint_master.coffee',
+      'source/javascripts/settings/base_setting.coffee',
+      'source/javascripts/settings/*.coffee',
       'source/javascripts/tools/base_tool.coffee',
       'source/javascripts/tools/*.coffee',
       'source/javascripts/essentials/init.coffee'
@@ -29,12 +31,12 @@ gulp.task('build', function() {
 
   gulp.src([
       'source/stylesheets/pm_variables.sass',
-      'source/stylesheets/pm_bar.sass',
-      'source/stylesheets/toolbox.sass',
       'source/stylesheets/icon_font.sass',
-      'source/stylesheets/test_icon_font.sass',
-      'source/stylesheets/tools.sass',
-      'source/stylesheets/positioning.sass'
+      'source/stylesheets/pm_bar.sass',
+      'source/stylesheets/pm_overlay.sass',
+      'source/stylesheets/pm_tools.sass',
+      'source/stylesheets/pm_settings.sass',
+      'source/stylesheets/pm_positioning.sass'
       ])
     .pipe(concat('paint_master.sass'))
     .pipe(sass().on('error', sass.logError))

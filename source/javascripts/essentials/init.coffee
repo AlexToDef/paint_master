@@ -1,3 +1,4 @@
+
 $(document).ready ->
   window.painter = new window.PaintMaster
     applyOnImage: true,
@@ -16,6 +17,12 @@ $(document).ready ->
   painter.addToolboxItem PaintMasterPlugin.tools.AddText, 'top'
 
   painter.addToolboxItem PaintMasterPlugin.tools.ClipboardImagePaste, 'top'
+
+  painter.addSettingsItem 'Color', 'top'
+  painter.addSettingsItem 'CanvasWidth', 'top'
+  painter.addSettingsItem 'CanvasHeight', 'top'
+  painter.addSettingsItem 'BrushSize', 'top'
+  painter.addSettingsItem 'FontSize', 'top'
   # painter.addToolboxItem PaintMasterPlugin.tools.ClipboardImagePaste
   # painter.addToolboxItem PaintMasterPlugin.tools.ClipboardBackgroundPaste
   # painter.addToolboxItem PaintMasterPlugin.tools.WidthAndHeightSettings

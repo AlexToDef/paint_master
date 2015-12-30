@@ -13,13 +13,11 @@ window.PaintMasterPlugin.tools.DrawEllipse = class DrawEllipse extends window.Pa
 
   activate: ->
     super()
-    @displayPalette()
-    @setAuxDisplay '.pm-aux__control-brush-size', 'block'
+    @displaySettings ['color', 'brushSize']
 
   deactivate: ->
     super()
-    @hidePalette()
-    @setAuxDisplay '.pm-aux__control-brush-size', 'none'
+    @hideSettings ['color', 'brushSize']
 
   mousedown: (e) ->
     @drawing = true

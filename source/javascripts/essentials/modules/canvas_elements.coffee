@@ -5,6 +5,8 @@ switchActiveElementLock = (canvas) ->
 switchElementLock = (element) ->
   element.lockMovementX = !element.lockMovementX
   element.lockMovementY = !element.lockMovementY 
+  element.lockScalingY = !element.lockScalingY 
+  element.lockScalingX = !element.lockScalingX 
   element.cornerColor = if element.lockMovementX then 'rgba(150,0,0,0.5)' else 'rgba(102,153,255,0.5)'
   element.borderColor = if element.lockMovementX then 'rgba(150,0,0,0.5)' else 'rgba(102,153,255,0.5)'
 

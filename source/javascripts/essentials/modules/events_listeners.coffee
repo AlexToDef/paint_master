@@ -1,4 +1,4 @@
-onPressEscape = (paintMaster) ->
+onPressEnter = (e, paintMaster) ->
   canvas = paintMaster.canvas
   if canvas.getActiveObject() and paintMaster.activeTool
     e.preventDefault()
@@ -6,7 +6,7 @@ onPressEscape = (paintMaster) ->
   switchActiveElementLock(canvas) if canvas.getActiveObject()
   switchActiveGroupLock() if canvas.getActiveGroup()
 
-onPressEnter = (paintMaster) ->
+onPressEscape = (paintMaster) ->
   paintMaster.canvas.deactivateAll().renderAll()#.remove(activeGroupObject).renderAll()
   paintMaster.activeTool.deactivate() if paintMaster.activeTool
 
@@ -25,9 +25,9 @@ onPressBackspace = (e, paintMaster) ->
 
 keydown = {
   27: (event, paintMaster) ->
-    onPressEnter(paintMaster)
-  13: (event, paintMaster) ->
     onPressEscape(paintMaster)
+  13: (event, paintMaster) ->
+    onPressEnter(event, paintMaster)
   46: (event, paintMaster) ->
     onPressBackspace(event, paintMaster)
   8:  (event, paintMaster) ->

@@ -9,11 +9,8 @@ window.PaintMasterPlugin.tools.SelectionModeSwitch = class SelectionModeSwitch e
 
   activate: ->
     super()
-    @setAuxDisplay '.pm-aux__control-canvas-width', 'block'
-    @setAuxDisplay '.pm-aux__control-canvas-height', 'block'
+    @displaySettings ['canvasWidth', 'canvasHeight']
 
   deactivate: ->
     super()
-    @hidePalette()
-    @setAuxDisplay '.pm-aux__control-canvas-width', 'none'
-    @setAuxDisplay '.pm-aux__control-canvas-height', 'none'
+    @hideSettings ['canvasWidth', 'canvasHeight']

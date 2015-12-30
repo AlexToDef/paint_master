@@ -111,6 +111,7 @@ window.PaintMasterPlugin.tools.Crop = class Crop extends window.PaintMasterPlugi
     @bottomBlindZone.set('width', @trueSight.width * @trueSight.scaleX).set('left', xx).set('top', yx)
 
   onSubmit: (e) ->
+    console.log 'onSubmit'
     width = @trueSight.width * @trueSight.scaleX
     height = @trueSight.height * @trueSight.scaleY
     left = @trueSight.left

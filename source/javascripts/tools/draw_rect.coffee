@@ -9,14 +9,12 @@ window.PaintMasterPlugin.tools.DrawRect = class DrawRect extends window.PaintMas
   activate: ->
     super()
     @lockDrag()
-    @displayPalette()
-    @setAuxDisplay '.pm-aux__control-brush-size', 'block'
+    @displaySettings ['color', 'brushSize']
 
   deactivate: ->
     super()
     @unlockDrag()
-    @hidePalette()
-    @setAuxDisplay '.pm-aux__control-brush-size', 'none'
+    @hideSettings ['color', 'brushSize']
 
   mousedown: (e) ->
     @drawing = true

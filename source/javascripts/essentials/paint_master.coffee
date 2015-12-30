@@ -5,12 +5,14 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
     @importModule 'AttributeEvents'
 
     @toolbox = {}
-    @settings =
-      canvasWidth:  localStorage['pmAttr[canvasWidth]']  || @opts.width
-      canvasHeight: localStorage['pmAttr[canvasHeight]'] || @opts.height
-      fontSize:     localStorage['pmAttr[fontSize]']     || 16
-      brushSize:    localStorage['pmAttr[brushSize]']    || 5
-      color:        localStorage['pmAttr[color]']        || '#ff421f'
+    @settings = {
+      test: 1
+    }
+      # canvasWidth:  localStorage['pmAttr[canvasWidth]']  || @opts.width
+      # canvasHeight: localStorage['pmAttr[canvasHeight]'] || @opts.height
+      # fontSize:     localStorage['pmAttr[fontSize]']     || 16
+      # brushSize:    localStorage['pmAttr[brushSize]']    || 5
+      # color:        localStorage['pmAttr[color]']        || '#ff421f'
 
     @fCanvas = new fabric.Canvas(@opts.id)
     @fCanvas.freeDrawingBrush.color = @settings.color
@@ -41,25 +43,16 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
     pmBarTop = "
       <div class='pm-bar pm-bar_top'>
         <div class='pm-toolbox'></div>
-        <div class='pm-palette'></div>
-        <div class='pm-aux'></div>
-        <div class='pm-block pm-current-tool hidden'>
-          <div class='icon'>
-          </div>
-          <div class='desc'>
-            <span class='pm-current-tool-name'></span> 
-          </div>
-          <div style='clear: both'></div>
-        </div>
+        <div class='pm-settings'></div>
       </div>
     "
     @topBar = $(pmBarTop).prependTo(@wrapper)
-    @bottomBar = $("<div class='pm-bar pm-bar_bottom'></div>").prependTo(@wrapper)
+    @bottomBar = $("<div class='pm-bar pm-bar--bottom'><div class='pm-toolbox'></div></div>").appendTo(@wrapper)
 
     # @bottomBar = 
     # @currentToolNameEl = $(@toolboxEl).parent().find('.pm-current-tool-name')
     # @currentToolEl = $(@toolboxEl).parent().find('.pm-current-tool')
-    # @containerEl = $('.pm-toolbox-wrapper, .canvas-container').wrapAll("<div class='pm-main-container pm-main-container-#{@opts.position}'></div>")
+    @containerEl = $('.canvas-container')#$('.pm-toolbox-wrapper, .canvas-container').wrapAll("<div class='pm-main-container pm-main-container-#{@opts.position}'></div>")
     # @paletteEl = @toolboxEl.parent().find('.pm-palette')
     # @auxEl = @toolboxEl.parent().find('.pm-aux')
 
@@ -88,8 +81,9 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
       self.toolbox[toolId].onMouseleave(e)
 
     $(window).on 'keydown', (e) ->
-      console.log self.keydown
-      self.keydown[e.keyCode](e, self)
+      console.log e.keyCode
+      handler = self.keydown[e.keyCode]
+      handler(e, self) if handler
 
   setDrawListeners: ->
     @canvas.observe 'mouse:down', (e) =>
@@ -101,10 +95,19 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
 
 
   addToolboxItem: (item, bar) ->
+    item = new item(@)
     if bar == 'top'
-      item = new item(@)
       $(@topBar).find('.pm-toolbox').append(item.html)
-      @toolbox[item.id] = item
+    if bar == 'bottom'
+      $(@bottomBar).find('.pm-toolbox').append(item.html)
+    @toolbox[item.id] = item
+
+  addSettingsItem: (item, bar) ->
+    item = new window.PaintMasterPlugin.settings[item](@)
+    $(@topBar).find('.pm-settings').append(item.html) if bar == 'top'
+    item.included()
+    item.registerCallbacks()
+    @setWatcherOnCollectionElement(@, @settings, item.attributeName)
 
   addAdditionalToolboxItem: (item) ->
     item = new item(@)

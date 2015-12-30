@@ -1,0 +1,48 @@
+.pm-settings
+  float: left
+  width: 600px
+  padding-left: 10px
+  // display: flex
+  // justify-content: flex-end
+
+.pm-settings__item
+  float: right
+  display: none
+  padding: 15px 20px
+  font-size: 0.9em
+  label, input
+    display: inline-block
+    vertical-align: middle
+  label
+    span
+      width: 20px
+      display: inline-block
+
+.pm-settings__palette
+  display: none
+  float: left
+  width: 220px
+  align-items: center
+  padding-left: 10px
+
+.pm-settings__palette-item
+  float: left
+  width: 23px
+  height: 23px
+  border-radius: 6px
+  margin: 10px 2px
+  div
+    border-radius: 6px
+    margin-top: 5px
+    margin-left: 5px
+    width: 15px
+    height: 15px
+    transition: width 0.3s, height 0.3s, margin 0.3s, border-radius 0.3s ease-in-out
+
+.pm-settings__palette-item--active 
+  div
+    border-radius: 12px
+    margin-top: 0px
+    margin-left: 0px
+    width: 23px
+    height: 23px

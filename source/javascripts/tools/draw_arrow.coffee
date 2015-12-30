@@ -53,16 +53,15 @@ window.PaintMasterPlugin.tools.DrawArrow = class DrawArrow extends window.PaintM
   activate: ->
     super()
     @lockDrag()
-    @displayPalette()
-    @setAuxDisplay '.pm-aux__control-brush-size', 'block'
+    @displaySettings ['color', 'brushSize']
 
   deactivate: ->
     super()
     @unlockDrag()
-    @hidePalette()
-    @setAuxDisplay '.pm-aux__control-brush-size', 'none'
+    @hideSettings ['color', 'brushSize']
 
   mousedown: (e) ->
+    @canvas.deactivateAll()
     @initialMouse = @canvas.getPointer(e.e)
     self = @
     fabric.loadSVGFromString strSVG, (arrow) ->
@@ -82,6 +81,7 @@ window.PaintMasterPlugin.tools.DrawArrow = class DrawArrow extends window.PaintM
 
   mousemove: (e) ->
     return unless @drawing
+    arrow = @canvas.getActiveObject()
     mouse = @canvas.getPointer(e.e)
     currentX = mouse.x
     currentY = mouse.y
@@ -94,7 +94,6 @@ window.PaintMasterPlugin.tools.DrawArrow = class DrawArrow extends window.PaintM
     deltaHeight = @initialHeight - distance
     proption = Math.abs(distance / @initialHeight)
 
-    arrow = @canvas.getActiveObject(); 
     arrow.set('angle', angleInDegrees)
     arrow.set('scaleY', proption)
 

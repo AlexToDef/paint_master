@@ -48,8 +48,8 @@ window.PaintMasterPlugin.tools.ClipboardImagePaste = class ClipboardImagePaste e
             &#8984;&nbsp;&#8212;&nbsp;V
           </div>
         </div>"
-    @pasteElem = $(html).appendTo(@paintMaster.containerEl[1])
-    @helpElem = $(helpHtml).appendTo($(@paintMaster.containerEl[1]))
+    @pasteElem = $(html).appendTo(@paintMaster.containerEl)
+    @helpElem = $(helpHtml).appendTo($(@paintMaster.containerEl))
     @pasteElem.focus()
     window.addEventListener 'click', @clickEventListener, false
     super()
@@ -95,6 +95,7 @@ window.PaintMasterPlugin.tools.ClipboardImagePaste = class ClipboardImagePaste e
     image.src = imageURL
     image.onload = (->
       imgInstance = new fabric.Image(image, {} )
+      imgInstance.selectable = false if @resize
       @canvas.add(imgInstance)
       @canvas.renderAll()
       @deactivate()

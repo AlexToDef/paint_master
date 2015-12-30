@@ -100,18 +100,11 @@ window.PaintMasterPlugin.tools.BaseTool = class BaseTool
       canvasObj.lockScalingY = true
     @canvas.renderAll()
 
-  displayPalette: ->
-    $(@paintMaster.paletteEl).css('display', 'block')
+  displaySettings: (settingsName) ->
+    for i, name of settingsName
+      $("[data-pm-settings-attr='#{name}']").show()
 
-  hidePalette: ->
-    $(@paintMaster.paletteEl).css('display', 'none')
-
-  displayBrushSize: ->
-    1
-
-  hideBrushSize: ->
-    1
-
-  setAuxDisplay: (selector, display) ->
-    $(selector).css 'display', display
+  hideSettings: (settingsName) ->
+    for i, name of settingsName
+      $("[data-pm-settings-attr='#{name}']").hide()
 

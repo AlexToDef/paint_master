@@ -2,7 +2,7 @@ window.PaintMasterPlugin.settings.CanvasHeight = class CanvasHeight extends Base
   constructor: (@paintMaster) ->
     @attributeName = 'canvasHeight'
     @humanName = 'Высота xолста'
-    @initialValue = (localStorage['pmAttr[canvasHeight]']) || 500
+    @initialValue = localStorage['pmAttr[canvasHeight]'] || 500
     @html = @makeHTML()
 
   included: ->

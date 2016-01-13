@@ -16,7 +16,7 @@ $(document).ready ->
   painter.addToolboxItem PaintMasterPlugin.tools.DrawArrow, 'top'
   painter.addToolboxItem PaintMasterPlugin.tools.AddText, 'top'
 
-  painter.addToolboxItem PaintMasterPlugin.tools.ClipboardImagePaste, 'top'
+  painter.addToolboxItem PaintMasterPlugin.tools.ClipboardImagePaste, 'hidden'
 
   painter.addSettingsItem 'Color', 'top'
   painter.addSettingsItem 'CanvasWidth', 'top'

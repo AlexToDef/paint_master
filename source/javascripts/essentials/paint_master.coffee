@@ -58,7 +58,7 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
 
   setToolboxEventListeners: ->
     self = @
-    $(@wrapper).on 'click', '.pm-toolbox .pm-toolbox__tool', (e) ->
+    onClick = (e) ->
       toolId = $(@).data('pmToolId')
       self.toolbox[toolId].onClick(e)
       if self.activeTool == self.toolbox[toolId]
@@ -67,6 +67,8 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
       else
         self.toolbox[toolId].activate()
         self.activeTool = self.toolbox[toolId]
+    $(@wrapper).on 'click', '.pm-toolbox .pm-toolbox__tool', onClick      
+    $('body').on 'click', '.pm-toolbox__tool_outer', onClick 
 
     $(@wrapper).on 'change', 'input', (e) ->
       toolId = $(@).parent().data('pmToolId')
@@ -100,6 +102,8 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
       $(@topBar).find('.pm-toolbox').append(item.html)
     if bar == 'bottom'
       $(@bottomBar).find('.pm-toolbox').append(item.html)
+    if bar == 'hidden'
+      1
     @toolbox[item.id] = item
 
   addSettingsItem: (item, bar) ->

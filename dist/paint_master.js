@@ -217,9 +217,9 @@ window.PaintMasterPlugin.PaintMaster = PaintMaster = (function() {
   };
 
   PaintMaster.prototype.setToolboxEventListeners = function() {
-    var self;
+    var onClick, self;
     self = this;
-    $(this.wrapper).on('click', '.pm-toolbox .pm-toolbox__tool', function(e) {
+    onClick = function(e) {
       var key, ref, tool, toolId;
       toolId = $(this).data('pmToolId');
       self.toolbox[toolId].onClick(e);
@@ -234,7 +234,9 @@ window.PaintMasterPlugin.PaintMaster = PaintMaster = (function() {
         self.toolbox[toolId].activate();
         return self.activeTool = self.toolbox[toolId];
       }
-    });
+    };
+    $(this.wrapper).on('click', '.pm-toolbox .pm-toolbox__tool', onClick);
+    $('body').on('click', '.pm-toolbox__tool_outer', onClick);
     $(this.wrapper).on('change', 'input', function(e) {
       var toolId;
       toolId = $(this).parent().data('pmToolId');
@@ -293,6 +295,9 @@ window.PaintMasterPlugin.PaintMaster = PaintMaster = (function() {
     }
     if (bar === 'bottom') {
       $(this.bottomBar).find('.pm-toolbox').append(item.html);
+    }
+    if (bar === 'hidden') {
+      1;
     }
     return this.toolbox[item.id] = item;
   };
@@ -549,7 +554,7 @@ window.PaintMasterPlugin.settings.CanvasWidth = CanvasWidth = (function(superCla
     this.paintMaster = paintMaster1;
     this.attributeName = 'canvasWidth';
     this.humanName = 'Ширина xолста';
-    this.initialValue = (localStorage['pmAttr[canvasWidth]'] || this.opts.width) || 500;
+    this.initialValue = localStorage['pmAttr[canvasWidth]'] || 1000;
     this.html = this.makeHTML();
   }
 
@@ -854,7 +859,7 @@ window.PaintMasterPlugin.tools.AddText = AddText = (function(superClass) {
 
   function AddText(paintMaster1) {
     this.paintMaster = paintMaster1;
-    this.mousedown = bind(this.mousedown, this);
+    this.mouseup = bind(this.mouseup, this);
     this.name = 'Текст';
     this.help = 'Нажмите на появившееся поле чтобы редактировать текст';
     this.id = 'add-text';
@@ -862,14 +867,18 @@ window.PaintMasterPlugin.tools.AddText = AddText = (function(superClass) {
   }
 
   AddText.prototype.activate = function() {
-    return AddText.__super__.activate.call(this);
+    AddText.__super__.activate.call(this);
+    this.lockDrag();
+    return this.displaySettings(['color', 'fontSize']);
   };
 
   AddText.prototype.deactivate = function() {
-    return AddText.__super__.deactivate.call(this);
+    AddText.__super__.deactivate.call(this);
+    this.unlockDrag();
+    return this.hideSettings(['color', 'fontSize']);
   };
 
-  AddText.prototype.mousedown = function(e) {
+  AddText.prototype.mouseup = function(e) {
     var mouse;
     mouse = this.canvas.getPointer(e.e);
     if (this.active) {
@@ -882,9 +891,9 @@ window.PaintMasterPlugin.tools.AddText = AddText = (function(superClass) {
       });
       this.fCanvas.add(this.iText);
       this.canvas.renderAll().setActiveObject(this.iText);
-      this.canvas.getActiveObject().trigger('dblclick');
       this.iText.enterEditing();
-      AddText.__super__.mousedown.call(this);
+      this.canvas.wrapperEl.appendChild(this.iText.hiddenTextarea);
+      AddText.__super__.mouseup.call(this);
     }
     return this.deactivate();
   };
@@ -1328,10 +1337,10 @@ window.PaintMasterPlugin.tools.DrawArrow = DrawArrow = (function(superClass) {
       arrow.top = self.initialMouse.y;
       arrow.left = self.initialMouse.x;
       arrow.originX = 'center';
-      arrow.originY = 'top';
+      arrow.originY = 'bottom';
       arrow.angle = 10;
-      arrow.scaleX = 0.1 * parseInt(self.paintMaster.settings.brushSize);
-      arrow.scaleY = 0.1;
+      arrow.scaleX = 0.05 * parseInt(self.paintMaster.settings.brushSize);
+      arrow.scaleY = 0.01;
       self.initialHeight = arrow.height;
       self.canvas.add(arrow).renderAll();
       return self.canvas.setActiveObject(arrow);
@@ -1354,6 +1363,7 @@ window.PaintMasterPlugin.tools.DrawArrow = DrawArrow = (function(superClass) {
     distance = Math.sqrt(Math.abs(Math.pow(deltaX, 2) + Math.pow(deltaY, 2)));
     deltaHeight = this.initialHeight - distance;
     proption = Math.abs(distance / this.initialHeight);
+    arrow.set('originY', 'top');
     arrow.set('angle', angleInDegrees);
     arrow.set('scaleY', proption);
     this.aArrow = arrow;
@@ -1881,7 +1891,7 @@ $(document).ready(function() {
   painter.addToolboxItem(PaintMasterPlugin.tools.DrawingModeSwitch, 'top');
   painter.addToolboxItem(PaintMasterPlugin.tools.DrawArrow, 'top');
   painter.addToolboxItem(PaintMasterPlugin.tools.AddText, 'top');
-  painter.addToolboxItem(PaintMasterPlugin.tools.ClipboardImagePaste, 'top');
+  painter.addToolboxItem(PaintMasterPlugin.tools.ClipboardImagePaste, 'hidden');
   painter.addSettingsItem('Color', 'top');
   painter.addSettingsItem('CanvasWidth', 'top');
   painter.addSettingsItem('CanvasHeight', 'top');

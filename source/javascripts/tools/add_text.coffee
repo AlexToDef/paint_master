@@ -7,11 +7,15 @@ window.PaintMasterPlugin.tools.AddText = class AddText extends window.PaintMaste
 
   activate: ->
     super()
+    @lockDrag()
+    @displaySettings ['color', 'fontSize']
 
   deactivate: ->
     super()
+    @unlockDrag()
+    @hideSettings ['color', 'fontSize']
 
-  mousedown: (e) =>
+  mouseup: (e) =>
     mouse = @canvas.getPointer(e.e)
     if @active
       @iText = new fabric.IText '',
@@ -22,7 +26,7 @@ window.PaintMasterPlugin.tools.AddText = class AddText extends window.PaintMaste
         fontSize: parseInt(@paintMaster.settings.fontSize)
       @fCanvas.add(@iText)
       @canvas.renderAll().setActiveObject(@iText)
-      @canvas.getActiveObject().trigger('dblclick')
       @iText.enterEditing()
+      @canvas.wrapperEl.appendChild(@iText.hiddenTextarea)
       super()
     @deactivate()

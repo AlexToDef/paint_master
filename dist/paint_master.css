@@ -195,6 +195,8 @@ canvas {
   .pm-settings__item label span {
     width: 20px;
     display: inline-block; }
+  .pm-settings__item input[type="number"] {
+    width: 40px; }
 
 .pm-settings__palette {
   display: none;

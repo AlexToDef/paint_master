@@ -70,10 +70,10 @@ window.PaintMasterPlugin.tools.DrawArrow = class DrawArrow extends window.PaintM
       arrow.top = self.initialMouse.y
       arrow.left = self.initialMouse.x
       arrow.originX = 'center'
-      arrow.originY = 'top'
+      arrow.originY = 'bottom'
       arrow.angle = 10
-      arrow.scaleX = 0.1 * parseInt(self.paintMaster.settings.brushSize)
-      arrow.scaleY = 0.1
+      arrow.scaleX = 0.05 * parseInt(self.paintMaster.settings.brushSize)
+      arrow.scaleY = 0.01
       self.initialHeight = arrow.height
       self.canvas.add(arrow).renderAll()
       self.canvas.setActiveObject(arrow)
@@ -94,6 +94,7 @@ window.PaintMasterPlugin.tools.DrawArrow = class DrawArrow extends window.PaintM
     deltaHeight = @initialHeight - distance
     proption = Math.abs(distance / @initialHeight)
 
+    arrow.set 'originY', 'top'
     arrow.set('angle', angleInDegrees)
     arrow.set('scaleY', proption)
 

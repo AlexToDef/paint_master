@@ -2,7 +2,7 @@ window.PaintMasterPlugin.settings.CanvasWidth = class CanvasWidth extends BaseSe
   constructor: (@paintMaster) ->
     @attributeName = 'canvasWidth'
     @humanName = 'Ширина xолста'
-    @initialValue = (localStorage['pmAttr[canvasWidth]'] || @opts.width) || 500
+    @initialValue = localStorage['pmAttr[canvasWidth]']  || 1000
     @html = @makeHTML()
 
   included: ->

@@ -23,8 +23,3 @@ $(document).ready ->
   painter.addSettingsItem 'CanvasHeight', 'top'
   painter.addSettingsItem 'BrushSize', 'top'
   painter.addSettingsItem 'FontSize', 'top'
-  # painter.addToolboxItem PaintMasterPlugin.tools.ClipboardImagePaste
-  # painter.addToolboxItem PaintMasterPlugin.tools.ClipboardBackgroundPaste
-  # painter.addToolboxItem PaintMasterPlugin.tools.WidthAndHeightSettings
-  # painter.addToolboxItem PaintMasterPlugin.tools.OpenSettings
-  # painter.addToolboxItem PaintMasterPlugin.tools.ChooseColor

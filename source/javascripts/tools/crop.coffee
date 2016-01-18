@@ -4,7 +4,7 @@ window.PaintMasterPlugin.tools.Crop = class Crop extends window.PaintMasterPlugi
     @help = 'Выберите участок, который должен остаться </br> <b>Enter</b> - применить </br> <b>Backspace</b> - отмена'
     @id = 'crop'
     @canvas = @paintMaster.fCanvas
-    @shadeFill = '5E5E5E'
+    @shadeFill = '#5e5e5e'
     @shadeOpacity = 0.7
     super(@paintMaster)
 
@@ -57,14 +57,14 @@ window.PaintMasterPlugin.tools.Crop = class Crop extends window.PaintMasterPlugi
     yy = @trueSight.top
     yx = @trueSight.top + @trueSight.height
     @leftBlindZone = @addBlindZone(
-      height: @canvas.height,
-      width: xx,
+      height: parseInt(@canvas.getHeight()),
+      width: xx + 0.25,
       left: 0,
       top: 0
     )
 
     @topBlindZone = @addBlindZone(
-      height: xy - @trueSight.height,
+      height: xy - @trueSight.height + 0.25,
       width: @canvas.width*2,
       left: xx,
       top: 0
@@ -79,12 +79,13 @@ window.PaintMasterPlugin.tools.Crop = class Crop extends window.PaintMasterPlugi
 
     @bottomBlindZone = @addBlindZone(
       height: @canvas.height*2,
-      width: @trueSight.width * @trueSight.scaleX,
+      width: @trueSight.width * @trueSight.scaleX + 0.25,
       left: xx,
       top: xy
     )
 
   addBlindZone: (params) ->
+    console.log 'add blind zone'
     shade = new (fabric.Rect)(
       width: params.width,
       height: params.height,
@@ -100,24 +101,34 @@ window.PaintMasterPlugin.tools.Crop = class Crop extends window.PaintMasterPlugi
     shade
 
   moveBlindZones: ->
-    xx = @trueSight.left
-    xy = @trueSight.left + @trueSight.width * @trueSight.scaleX
-    yy = @trueSight.top
-    yx = @trueSight.top + @trueSight.height * @trueSight.scaleY
+    xx = Math.round( @trueSight.left )
+    xy = Math.round( @trueSight.left + @trueSight.getWidth() )
+    yy = Math.round( @trueSight.top )
+    yx = Math.round( @trueSight.top + @trueSight.getHeight() )
 
-    @leftBlindZone.set('width', xx)
-    @topBlindZone.set('height', yy).set('left', xx)
-    @rightBlindZone.set('left', xy).set('width', @canvas.width - xy).set('top', yy)
-    @bottomBlindZone.set('width', @trueSight.width * @trueSight.scaleX).set('left', xx).set('top', yx)
+    xx = Math.round(@trueSight.left, 2)
+    xy = Math.round(@trueSight.left + @trueSight.getWidth(), 2)
+    yy = Math.round(@trueSight.top, 2)
+    yx = Math.round(@trueSight.top + @trueSight.getHeight(), 2)
+
+    trueSightWidth = @trueSight.getWidth()
+
+    differ = trueSightWidth + xx + @paintMaster.settings.canvasWidth - xy
+    differ = 0
+
+    mdif = @paintMaster.settings.canvasWidth - (xx + (@paintMaster.settings.canvasWidth - @topBlindZone.left))
+    mdif = 0
+
+    @leftBlindZone.set('width', if xx > 0 then xx + 0.25 else 0)
+    @topBlindZone.set('height', if yy > 0 then yy + 0.25 else 0).set('left', xx)
+    @rightBlindZone.set('left', xy).set('width', parseFloat(@paintMaster.settings.canvasWidth) - xy).set('top', yy)
+    @bottomBlindZone.set('width', trueSightWidth + 0.25).set('left', xx).set('top', yx)
 
   onSubmit: (e) ->
-    console.log 'onSubmit'
-    width = @trueSight.width * @trueSight.scaleX
-    height = @trueSight.height * @trueSight.scaleY
+    width = @trueSight.getWidth()
+    height = @trueSight.getHeight()
     left = @trueSight.left
     top = @trueSight.top
-    scaleX = @trueSight.scaleX
-    scaleY = @trueSight.scaleY
     ctx = @canvas.contextTop || @canvas.contextContainer
 
     if top < 0
@@ -126,14 +137,19 @@ window.PaintMasterPlugin.tools.Crop = class Crop extends window.PaintMasterPlugi
     if left < 0
       width = width + left
       left = 0
-    if (top + height) > @canvas.height
+    if (top + height) > parseFloat(@canvas.getHeight())
       height = @canvas.height - top
-      top = @canvas.height - height
-    if (left + width) > @canvas.width
-      width = @canvas.width - left
-      left = @canvas.width - width
+      top = @canvas.getHeight() - height
+    if (left + width) > parseFloat(@canvas.getWidth())
+      width = @canvas.getWidth() - left
+      left = @canvas.getWidth() - width
 
     @canvas.deactivateAll().renderAll()
+
+    @canvas.remove @leftBlindZone
+    @canvas.remove @topBlindZone
+    @canvas.remove @rightBlindZone
+    @canvas.remove @bottomBlindZone
 
     img = @canvas.toDataURL({
       left: left,

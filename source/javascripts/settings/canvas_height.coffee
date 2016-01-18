@@ -16,9 +16,9 @@ window.PaintMasterPlugin.settings.CanvasHeight = class CanvasHeight extends Base
       if e.originalEvent.detail.property == 'canvasHeight'
         value = e.originalEvent.detail.newVal
         paintMaster.canvas.setHeight(value)
-        $('.pm-settings__item[data-pm-settings-attr="canvasHeight"] label span').html(value)
+        $('.pm-settings__item[data-pm-settings-attr="canvasHeight"] label span').html(parseInt(value))
         localStorage['pmAttr[canvasHeight]'] = value
-        $('.pm-settings__item[data-pm-settings-attr="canvasHeight"] input').val(value)
+        $('.pm-settings__item[data-pm-settings-attr="canvasHeight"] input').val(parseInt(value))
 
     $(document).on 'input', '.pm-settings__item[data-pm-settings-attr="canvasHeight"]', (e) ->
       self.paintMaster.settings[self.attributeName] = e.target.valueAsNumber

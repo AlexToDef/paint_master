@@ -5,14 +5,7 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
     @importModule 'AttributeEvents'
 
     @toolbox = {}
-    @settings = {
-      test: 1
-    }
-      # canvasWidth:  localStorage['pmAttr[canvasWidth]']  || @opts.width
-      # canvasHeight: localStorage['pmAttr[canvasHeight]'] || @opts.height
-      # fontSize:     localStorage['pmAttr[fontSize]']     || 16
-      # brushSize:    localStorage['pmAttr[brushSize]']    || 5
-      # color:        localStorage['pmAttr[color]']        || '#ff421f'
+    @settings = {}
 
     @fCanvas = new fabric.Canvas(@opts.id)
     @fCanvas.freeDrawingBrush.color = @settings.color
@@ -48,13 +41,7 @@ window.PaintMasterPlugin.PaintMaster = class PaintMaster
     "
     @topBar = $(pmBarTop).prependTo(@wrapper)
     @bottomBar = $("<div class='pm-bar pm-bar--bottom'><div class='pm-toolbox'></div></div>").appendTo(@wrapper)
-
-    # @bottomBar = 
-    # @currentToolNameEl = $(@toolboxEl).parent().find('.pm-current-tool-name')
-    # @currentToolEl = $(@toolboxEl).parent().find('.pm-current-tool')
-    @containerEl = $('.canvas-container')#$('.pm-toolbox-wrapper, .canvas-container').wrapAll("<div class='pm-main-container pm-main-container-#{@opts.position}'></div>")
-    # @paletteEl = @toolboxEl.parent().find('.pm-palette')
-    # @auxEl = @toolboxEl.parent().find('.pm-aux')
+    @containerEl = $('.canvas-container')
 
   setToolboxEventListeners: ->
     self = @

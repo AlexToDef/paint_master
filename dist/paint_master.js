@@ -177,9 +177,7 @@ window.PaintMasterPlugin.PaintMaster = PaintMaster = (function() {
     this.importModule('EventsListeners');
     this.importModule('AttributeEvents');
     this.toolbox = {};
-    this.settings = {
-      test: 1
-    };
+    this.settings = {};
     this.fCanvas = new fabric.Canvas(this.opts.id);
     this.fCanvas.freeDrawingBrush.color = this.settings.color;
     this.fCanvas.freeDrawingBrush.width = this.settings.brushSize;
@@ -529,9 +527,9 @@ window.PaintMasterPlugin.settings.CanvasHeight = CanvasHeight = (function(superC
       if (e.originalEvent.detail.property === 'canvasHeight') {
         value = e.originalEvent.detail.newVal;
         paintMaster.canvas.setHeight(value);
-        $('.pm-settings__item[data-pm-settings-attr="canvasHeight"] label span').html(value);
+        $('.pm-settings__item[data-pm-settings-attr="canvasHeight"] label span').html(parseInt(value));
         localStorage['pmAttr[canvasHeight]'] = value;
-        return $('.pm-settings__item[data-pm-settings-attr="canvasHeight"] input').val(value);
+        return $('.pm-settings__item[data-pm-settings-attr="canvasHeight"] input').val(parseInt(value));
       }
     });
     return $(document).on('input', '.pm-settings__item[data-pm-settings-attr="canvasHeight"]', function(e) {
@@ -572,9 +570,9 @@ window.PaintMasterPlugin.settings.CanvasWidth = CanvasWidth = (function(superCla
       if (e.originalEvent.detail.property === 'canvasWidth') {
         value = e.originalEvent.detail.newVal;
         paintMaster.canvas.setWidth(value);
-        $('.pm-settings__item[data-pm-settings-attr="canvasWidth"] label span').html(value);
+        $('.pm-settings__item[data-pm-settings-attr="canvasWidth"] label span').html(parseInt(value));
         localStorage['pmAttr[canvasWidth]'] = value;
-        return $('.pm-settings__item[data-pm-settings-attr="canvasWidth"] input').val(value);
+        return $('.pm-settings__item[data-pm-settings-attr="canvasWidth"] input').val(parseInt(value));
       }
     });
     return $(document).on('input', '.pm-settings__item[data-pm-settings-attr="canvasWidth"]', function(e) {
@@ -1130,7 +1128,7 @@ window.PaintMasterPlugin.tools.Crop = Crop = (function(superClass) {
     this.help = 'Выберите участок, который должен остаться </br> <b>Enter</b> - применить </br> <b>Backspace</b> - отмена';
     this.id = 'crop';
     this.canvas = this.paintMaster.fCanvas;
-    this.shadeFill = '5E5E5E';
+    this.shadeFill = '#5e5e5e';
     this.shadeOpacity = 0.7;
     Crop.__super__.constructor.call(this, this.paintMaster);
   }
@@ -1193,13 +1191,13 @@ window.PaintMasterPlugin.tools.Crop = Crop = (function(superClass) {
     yy = this.trueSight.top;
     yx = this.trueSight.top + this.trueSight.height;
     this.leftBlindZone = this.addBlindZone({
-      height: this.canvas.height,
-      width: xx,
+      height: parseInt(this.canvas.getHeight()),
+      width: xx + 0.25,
       left: 0,
       top: 0
     });
     this.topBlindZone = this.addBlindZone({
-      height: xy - this.trueSight.height,
+      height: xy - this.trueSight.height + 0.25,
       width: this.canvas.width * 2,
       left: xx,
       top: 0
@@ -1212,7 +1210,7 @@ window.PaintMasterPlugin.tools.Crop = Crop = (function(superClass) {
     });
     return this.bottomBlindZone = this.addBlindZone({
       height: this.canvas.height * 2,
-      width: this.trueSight.width * this.trueSight.scaleX,
+      width: this.trueSight.width * this.trueSight.scaleX + 0.25,
       left: xx,
       top: xy
     });
@@ -1220,6 +1218,7 @@ window.PaintMasterPlugin.tools.Crop = Crop = (function(superClass) {
 
   Crop.prototype.addBlindZone = function(params) {
     var shade;
+    console.log('add blind zone');
     shade = new fabric.Rect({
       width: params.width,
       height: params.height,
@@ -1236,26 +1235,32 @@ window.PaintMasterPlugin.tools.Crop = Crop = (function(superClass) {
   };
 
   Crop.prototype.moveBlindZones = function() {
-    var xx, xy, yx, yy;
-    xx = this.trueSight.left;
-    xy = this.trueSight.left + this.trueSight.width * this.trueSight.scaleX;
-    yy = this.trueSight.top;
-    yx = this.trueSight.top + this.trueSight.height * this.trueSight.scaleY;
-    this.leftBlindZone.set('width', xx);
-    this.topBlindZone.set('height', yy).set('left', xx);
-    this.rightBlindZone.set('left', xy).set('width', this.canvas.width - xy).set('top', yy);
-    return this.bottomBlindZone.set('width', this.trueSight.width * this.trueSight.scaleX).set('left', xx).set('top', yx);
+    var differ, mdif, trueSightWidth, xx, xy, yx, yy;
+    xx = Math.round(this.trueSight.left);
+    xy = Math.round(this.trueSight.left + this.trueSight.getWidth());
+    yy = Math.round(this.trueSight.top);
+    yx = Math.round(this.trueSight.top + this.trueSight.getHeight());
+    xx = Math.round(this.trueSight.left, 2);
+    xy = Math.round(this.trueSight.left + this.trueSight.getWidth(), 2);
+    yy = Math.round(this.trueSight.top, 2);
+    yx = Math.round(this.trueSight.top + this.trueSight.getHeight(), 2);
+    trueSightWidth = this.trueSight.getWidth();
+    differ = trueSightWidth + xx + this.paintMaster.settings.canvasWidth - xy;
+    differ = 0;
+    mdif = this.paintMaster.settings.canvasWidth - (xx + (this.paintMaster.settings.canvasWidth - this.topBlindZone.left));
+    mdif = 0;
+    this.leftBlindZone.set('width', xx > 0 ? xx + 0.25 : 0);
+    this.topBlindZone.set('height', yy > 0 ? yy + 0.25 : 0).set('left', xx);
+    this.rightBlindZone.set('left', xy).set('width', parseFloat(this.paintMaster.settings.canvasWidth) - xy).set('top', yy);
+    return this.bottomBlindZone.set('width', trueSightWidth + 0.25).set('left', xx).set('top', yx);
   };
 
   Crop.prototype.onSubmit = function(e) {
-    var ctx, height, img, left, scaleX, scaleY, top, width;
-    console.log('onSubmit');
-    width = this.trueSight.width * this.trueSight.scaleX;
-    height = this.trueSight.height * this.trueSight.scaleY;
+    var ctx, height, img, left, top, width;
+    width = this.trueSight.getWidth();
+    height = this.trueSight.getHeight();
     left = this.trueSight.left;
     top = this.trueSight.top;
-    scaleX = this.trueSight.scaleX;
-    scaleY = this.trueSight.scaleY;
     ctx = this.canvas.contextTop || this.canvas.contextContainer;
     if (top < 0) {
       height = height + top;
@@ -1265,15 +1270,19 @@ window.PaintMasterPlugin.tools.Crop = Crop = (function(superClass) {
       width = width + left;
       left = 0;
     }
-    if ((top + height) > this.canvas.height) {
+    if ((top + height) > parseFloat(this.canvas.getHeight())) {
       height = this.canvas.height - top;
-      top = this.canvas.height - height;
+      top = this.canvas.getHeight() - height;
     }
-    if ((left + width) > this.canvas.width) {
-      width = this.canvas.width - left;
-      left = this.canvas.width - width;
+    if ((left + width) > parseFloat(this.canvas.getWidth())) {
+      width = this.canvas.getWidth() - left;
+      left = this.canvas.getWidth() - width;
     }
     this.canvas.deactivateAll().renderAll();
+    this.canvas.remove(this.leftBlindZone);
+    this.canvas.remove(this.topBlindZone);
+    this.canvas.remove(this.rightBlindZone);
+    this.canvas.remove(this.bottomBlindZone);
     img = this.canvas.toDataURL({
       left: left,
       top: top,
